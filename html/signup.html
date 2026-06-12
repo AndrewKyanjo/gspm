@@ -1,0 +1,496 @@
+<!doctype html>
+
+<html class="light" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>GSPM Portal | Account Registration</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            tertiary: "#1d2123",
+                            "surface-container-low": "#eff4ff",
+                            "on-tertiary": "#ffffff",
+                            "tertiary-fixed-dim": "#c4c7c9",
+                            "on-tertiary-fixed-variant": "#444749",
+                            "inverse-primary": "#adc7f7",
+                            "on-error-container": "#93000a",
+                            "on-background": "#0b1c30",
+                            "outline-variant": "#c4c6cf",
+                            "on-secondary-fixed": "#241a00",
+                            "on-primary-container": "#86a0cd",
+                            "on-tertiary-fixed": "#191c1e",
+                            "surface-container-high": "#dce9ff",
+                            secondary: "#735c00",
+                            "secondary-fixed-dim": "#e9c349",
+                            "inverse-on-surface": "#eaf1ff",
+                            "on-tertiary-container": "#9c9fa1",
+                            "surface-tint": "#455f88",
+                            "primary-container": "#1a365d",
+                            "on-primary": "#ffffff",
+                            "tertiary-fixed": "#e0e3e5",
+                            "on-secondary-fixed-variant": "#574500",
+                            "surface-container": "#e5eeff",
+                            "primary-fixed-dim": "#adc7f7",
+                            error: "#ba1a1a",
+                            "surface-container-lowest": "#ffffff",
+                            "primary-fixed": "#d6e3ff",
+                            "on-secondary": "#ffffff",
+                            "surface-container-highest": "#d3e4fe",
+                            "tertiary-container": "#333638",
+                            "on-surface": "#0b1c30",
+                            "error-container": "#ffdad6",
+                            "inverse-surface": "#213145",
+                            "on-primary-fixed": "#001b3c",
+                            "on-primary-fixed-variant": "#2d476f",
+                            background: "#f8f9ff",
+                            primary: "#002045",
+                            "on-surface-variant": "#43474e",
+                            "surface-variant": "#d3e4fe",
+                            "surface-bright": "#f8f9ff",
+                            outline: "#74777f",
+                            "on-error": "#ffffff",
+                            surface: "#f8f9ff",
+                            "secondary-fixed": "#ffe088",
+                            "on-secondary-container": "#745c00",
+                            "surface-dim": "#cbdbf5",
+                            "secondary-container": "#fed65b",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.125rem",
+                            lg: "0.25rem",
+                            xl: "0.5rem",
+                            full: "0.75rem",
+                        },
+                        spacing: {
+                            "unit-4": "1rem",
+                            "container-max": "1280px",
+                            base: "4px",
+                            "unit-8": "2rem",
+                            "unit-6": "1.5rem",
+                            "unit-12": "3rem",
+                            gutter: "24px",
+                            "unit-2": "0.5rem",
+                            "unit-1": "0.25rem",
+                            "margin-mobile": "16px",
+                        },
+                        fontFamily: {
+                            "label-sm": ["Inter"],
+                            "body-md": ["Inter"],
+                            "label-md": ["Inter"],
+                            "headline-xl": ["Inter"],
+                            "headline-md": ["Inter"],
+                            "headline-lg": ["Inter"],
+                            "headline-lg-mobile": ["Inter"],
+                            "body-lg": ["Inter"],
+                        },
+                        fontSize: {
+                            "label-sm": [
+                                "12px",
+                                {
+                                    lineHeight: "16px",
+                                    letterSpacing: "0.05em",
+                                    fontWeight: "600",
+                                },
+                            ],
+                            "body-md": [
+                                "16px",
+                                { lineHeight: "24px", fontWeight: "400" },
+                            ],
+                            "label-md": [
+                                "14px",
+                                {
+                                    lineHeight: "20px",
+                                    letterSpacing: "0.01em",
+                                    fontWeight: "500",
+                                },
+                            ],
+                            "headline-xl": [
+                                "40px",
+                                {
+                                    lineHeight: "48px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                            "headline-md": [
+                                "24px",
+                                { lineHeight: "32px", fontWeight: "600" },
+                            ],
+                            "headline-lg": [
+                                "32px",
+                                {
+                                    lineHeight: "40px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "600",
+                                },
+                            ],
+                            "headline-lg-mobile": [
+                                "24px",
+                                { lineHeight: "32px", fontWeight: "600" },
+                            ],
+                            "body-lg": [
+                                "18px",
+                                { lineHeight: "28px", fontWeight: "400" },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    "FILL" 0,
+                    "wght" 300,
+                    "GRAD" 0,
+                    "opsz" 24;
+                vertical-align: middle;
+            }
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8f9ff;
+            }
+            .glass-overlay {
+                background: rgba(0, 32, 69, 0.7);
+                backdrop-filter: blur(8px);
+            }
+        </style>
+    </head>
+    <body class="min-h-screen flex items-stretch overflow-x-hidden">
+        <!-- Left Panel: Branding & Visuals -->
+        <section
+            class="hidden lg:flex lg:w-1/2 relative bg-primary items-center justify-center p-unit-12 overflow-hidden"
+        >
+            <div class="absolute inset-0 z-0">
+                <img
+                    alt="Cathedral Interior"
+                    class="w-full h-full object-cover opacity-60 mix-blend-overlay"
+                    data-alt="A majestic, high-ceilinged gothic cathedral interior with sunlight streaming through intricate stained glass windows, casting colorful patterns on polished stone floors. The atmosphere is solemn and sacred, utilizing a palette of deep blues, golden highlights, and architectural shadows. The visual style is professional, grand, and timeless, symbolizing the strength and heritage of the GSPM Digital Operations platform."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdBSB6RL0H13dGFXMqrM8dwEuH5JFdOz-IhrVmLAUHuj6EengBM8xrSC7ze-RE1fUjWB_Nj_cGJ8DfvaCnYaCoNJkjowFTcAgK0WD5Drd1R17TSBszQD4VaEp8RmhL0gpl4NrhOXCo7g1vKe0jmQ3vzZTISCTvHuiXjqwf5yj-CEwTt_PLJ3IlXIEi9rdmIUmCuUqjnXBPjusUIQvQqwblZ47Yvs-78dQw5Xzcqb18KJv96wgNr8k6eTeZIr55oIJkBr-2dhfHUgo"
+                />
+            </div>
+            <!-- Atmospheric micro-interaction: Subtle drifting particles -->
+            <div
+                class="absolute inset-0 pointer-events-none z-10"
+                id="particle-canvas"
+            ></div>
+            <div class="relative z-20 text-white max-w-lg">
+                <div class="mb-unit-8">
+                    <h1
+                        class="font-headline-xl text-headline-xl mb-unit-2 tracking-tight"
+                    >
+                        GSPM Digital
+                    </h1>
+                    <p
+                        class="font-body-lg text-body-lg text-primary-fixed opacity-90 leading-relaxed"
+                    >
+                        Unifying ministry coordination with transparency,
+                        stewardship, and organizational excellence.
+                    </p>
+                </div>
+                <div class="space-y-unit-6">
+                    <div class="flex items-start gap-unit-4">
+                        <div class="bg-primary-container p-unit-2 rounded-lg">
+                            <span
+                                class="material-symbols-outlined text-primary-fixed-dim"
+                                >verified_user</span
+                            >
+                        </div>
+                        <div>
+                            <h3
+                                class="font-headline-md text-headline-md text-sm mb-1"
+                            >
+                                Secure Infrastructure
+                            </h3>
+                            <p
+                                class="font-label-md text-label-md text-primary-fixed opacity-70"
+                            >
+                                Enterprise-grade security protocols for all
+                                sensitive operational data.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-unit-4">
+                        <div class="bg-primary-container p-unit-2 rounded-lg">
+                            <span
+                                class="material-symbols-outlined text-primary-fixed-dim"
+                                >hub</span
+                            >
+                        </div>
+                        <div>
+                            <h3
+                                class="font-headline-md text-headline-md text-sm mb-1"
+                            >
+                                Ministry Hub
+                            </h3>
+                            <p
+                                class="font-label-md text-label-md text-primary-fixed opacity-70"
+                            >
+                                Centralized access for coordinators, clergy, and
+                                administrative staff.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-unit-12 pt-unit-8 border-t border-white/10">
+                    <div
+                        class="inline-flex items-center gap-unit-2 bg-white/10 px-unit-4 py-unit-2 rounded-full border border-white/20"
+                    >
+                        <span
+                            class="material-symbols-outlined text-sm"
+                            style="font-variation-settings: &quot;FILL&quot; 1"
+                            >shield_with_heart</span
+                        >
+                        <span
+                            class="font-label-sm text-label-sm uppercase tracking-widest"
+                            >Secure Operations Badge</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Right Panel: Signup Form -->
+        <section
+            class="w-full lg:w-1/2 flex items-center justify-center p-unit-6 md:p-unit-12 bg-surface"
+        >
+            <div
+                class="w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded-xl p-unit-8 shadow-sm"
+            >
+                <div class="mb-unit-8 text-center lg:text-left">
+                    <div class="lg:hidden mb-unit-6 flex justify-center">
+                        <span class="text-primary font-headline-md font-bold"
+                            >GSPM Portal</span
+                        >
+                    </div>
+                    <h2
+                        class="font-headline-md text-headline-md text-on-surface mb-unit-1"
+                    >
+                        Create Account
+                    </h2>
+                    <p
+                        class="font-label-md text-label-md text-on-surface-variant"
+                    >
+                        Register to access the coordination portal.
+                    </p>
+                </div>
+                <form class="space-y-unit-4" onsubmit="event.preventDefault()">
+                    <!-- Full Name -->
+                    <div>
+                        <label
+                            class="block font-label-md text-label-md text-on-surface mb-unit-1"
+                            for="full-name"
+                            >Full Name</label
+                        >
+                        <div class="relative">
+                            <input
+                                class="w-full px-unit-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md"
+                                id="full-name"
+                                placeholder="John Doe"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                    <!-- Email -->
+                    <div>
+                        <label
+                            class="block font-label-md text-label-md text-on-surface mb-unit-1"
+                            for="email"
+                            >Email Address</label
+                        >
+                        <div class="relative">
+                            <input
+                                class="w-full px-unit-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md"
+                                id="email"
+                                placeholder="name@organization.org"
+                                type="email"
+                            />
+                        </div>
+                    </div>
+                    <!-- Organization/Parish -->
+                    <div>
+                        <label
+                            class="block font-label-md text-label-md text-on-surface mb-unit-1"
+                            for="parish"
+                            >Parish / Organization</label
+                        >
+                        <div class="relative">
+                            <input
+                                class="w-full px-unit-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md"
+                                id="parish"
+                                placeholder="St. Mary's Cathedral"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                    <!-- Role Selection -->
+                    <div>
+                        <label
+                            class="block font-label-md text-label-md text-on-surface mb-unit-1"
+                            for="role"
+                            >Role Selection</label
+                        >
+                        <select
+                            class="w-full px-unit-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md appearance-none"
+                            id="role"
+                        >
+                            <option disabled="" selected="" value="">
+                                Select your official role
+                            </option>
+                            <option value="parish">Parish Coordinator</option>
+                            <option value="deanery">Deanery Coordinator</option>
+                            <option value="administrator">
+                                Regional Administrator
+                            </option>
+                            <option value="staff">Administrative Staff</option>
+                        </select>
+                    </div>
+                    <!-- Password -->
+                    <div>
+                        <label
+                            class="block font-label-md text-label-md text-on-surface mb-unit-1"
+                            for="password"
+                            >Password</label
+                        >
+                        <div class="relative">
+                            <input
+                                class="w-full px-unit-4 py-3 rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md"
+                                id="password"
+                                placeholder="••••••••"
+                                type="password"
+                            />
+                            <button
+                                class="absolute right-3 top-3 text-on-surface-variant hover:text-primary transition-colors"
+                                type="button"
+                            >
+                                <span class="material-symbols-outlined"
+                                    >visibility</span
+                                >
+                            </button>
+                        </div>
+                        <p
+                            class="mt-1 font-label-sm text-label-sm text-on-surface-variant/70 italic"
+                        >
+                            Minimum 8 characters with specialized symbols.
+                        </p>
+                    </div>
+                    <div class="pt-unit-2">
+                        <button
+                            class="w-full bg-primary-container text-white py-unit-4 rounded-lg font-label-md text-label-md hover:bg-primary transition-colors shadow-sm active:scale-[0.98]"
+                            type="submit"
+                        >
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+                <div
+                    class="mt-unit-8 text-center border-t border-outline-variant pt-unit-6"
+                >
+                    <p
+                        class="font-body-md text-body-md text-on-surface-variant"
+                    >
+                        Already have an account?
+                        <a
+                            class="text-primary font-semibold hover:underline decoration-2 underline-offset-4"
+                            href="#"
+                            >Sign in instead</a
+                        >
+                    </p>
+                </div>
+                <div
+                    class="mt-unit-8 flex items-center justify-center gap-unit-2 opacity-50"
+                >
+                    <span class="material-symbols-outlined text-sm">lock</span>
+                    <span class="font-label-sm text-label-sm"
+                        >Protected by 256-bit encryption</span
+                    >
+                </div>
+            </div>
+        </section>
+        <script>
+            // Simple Particle Background Animation for Left Panel
+            const canvas = document.createElement("canvas");
+            const container = document.getElementById("particle-canvas");
+            if (container) {
+                container.appendChild(canvas);
+                const ctx = canvas.getContext("2d");
+                let particles = [];
+
+                function resize() {
+                    canvas.width = container.offsetWidth;
+                    canvas.height = container.offsetHeight;
+                }
+
+                window.addEventListener("resize", resize);
+                resize();
+
+                class Particle {
+                    constructor() {
+                        this.init();
+                    }
+                    init() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+                        this.size = Math.random() * 2 + 1;
+                        this.speedX = (Math.random() - 0.5) * 0.5;
+                        this.speedY = (Math.random() - 0.5) * 0.5;
+                        this.alpha = Math.random() * 0.5 + 0.1;
+                    }
+                    update() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        if (this.x < 0 || this.x > canvas.width)
+                            this.speedX *= -1;
+                        if (this.y < 0 || this.y > canvas.height)
+                            this.speedY *= -1;
+                    }
+                    draw() {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                for (let i = 0; i < 40; i++) {
+                    particles.push(new Particle());
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach((p) => {
+                        p.update();
+                        p.draw();
+                    });
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+
+            // Dropdown styling interaction
+            const roleSelect = document.getElementById("role");
+            roleSelect.addEventListener("change", function () {
+                if (this.value) {
+                    this.classList.add("text-on-surface");
+                    this.classList.remove("text-on-surface-variant");
+                }
+            });
+        </script>
+    </body>
+</html>
