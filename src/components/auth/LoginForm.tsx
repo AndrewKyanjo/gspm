@@ -33,7 +33,7 @@ export default function LoginForm() {
 
         // Success — Next.js router pushes to dashboard
         // Middleware will verify the session on the server
-        router.push("/dashboard");
+        router.push("/");
         router.refresh(); // Tells Next.js to re-fetch server components
     };
 
