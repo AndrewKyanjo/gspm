@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&amp;family=Source+Sans+3:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "tertiary-fixed-dim": "#ffb59d",
+                  "on-tertiary": "#ffffff",
+                  "surface-bright": "#fbf8ff",
+                  "inverse-surface": "#303036",
+                  "surface-container-high": "#eae7ef",
+                  "secondary-container": "#fed65b",
+                  "on-error-container": "#93000a",
+                  "surface-dim": "#dbd9e1",
+                  "error-container": "#ffdad6",
+                  "primary": "#000666",
+                  "error": "#ba1a1a",
+                  "tertiary": "#380b00",
+                  "on-secondary-container": "#745c00",
+                  "on-tertiary-container": "#e17c5a",
+                  "inverse-primary": "#bdc2ff",
+                  "surface-container": "#efecf5",
+                  "background": "#fbf8ff",
+                  "on-primary": "#ffffff",
+                  "primary-fixed-dim": "#bdc2ff",
+                  "on-tertiary-fixed": "#390c00",
+                  "surface-variant": "#e4e1ea",
+                  "surface": "#fbf8ff",
+                  "outline-variant": "#c6c5d4",
+                  "on-primary-container": "#8690ee",
+                  "secondary": "#735c00",
+                  "inverse-on-surface": "#f2eff8",
+                  "on-tertiary-fixed-variant": "#7b2e12",
+                  "primary-container": "#1a237e",
+                  "on-surface": "#1b1b21",
+                  "on-secondary-fixed": "#241a00",
+                  "on-error": "#ffffff",
+                  "surface-container-low": "#f5f2fb",
+                  "surface-container-highest": "#e4e1ea",
+                  "secondary-fixed-dim": "#e9c349",
+                  "on-primary-fixed": "#000767",
+                  "on-background": "#1b1b21",
+                  "on-secondary": "#ffffff",
+                  "outline": "#767683",
+                  "surface-tint": "#4c56af",
+                  "on-secondary-fixed-variant": "#574500",
+                  "on-primary-fixed-variant": "#343d96",
+                  "primary-fixed": "#e0e0ff",
+                  "on-surface-variant": "#454652",
+                  "secondary-fixed": "#ffe088",
+                  "tertiary-container": "#5c1800",
+                  "tertiary-fixed": "#ffdbd0",
+                  "surface-container-lowest": "#ffffff"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "fontFamily": {
+                  "headline": ["Work Sans"],
+                  "display": ["Work Sans"],
+                  "body": ["Source Sans Three"],
+                  "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .hierarchy-line {
+      position: absolute;
+      left: 1.25rem;
+      top: -1rem;
+      bottom: 1.5rem;
+      width: 2px;
+      background-color: #c6c5d4;
+    }
+    .hierarchy-connector {
+      position: absolute;
+      left: 1.25rem;
+      top: 1.5rem;
+      width: 1rem;
+      height: 2px;
+      background-color: #c6c5d4;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-primary dark:bg-primary-container shadow-xl flex flex-col gap-2 py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline text-2xl font-bold text-on-primary">Good Samaritans</h1>
+<p class="text-on-primary text-xs opacity-70">Super Admin</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body text-sm font-medium">Dashboard</span>
+</a>
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">newspaper</span>
+<span class="font-body text-sm font-medium">News</span>
+</a>
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body text-sm font-medium">Leadership</span>
+</a>
+<a class="bg-on-primary-fixed-variant text-on-primary rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">MapPin</span>
+<span class="font-body text-sm font-medium">Ministries</span>
+</a>
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">video_library</span>
+<span class="font-body text-sm font-medium">Media</span>
+</a>
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-body text-sm font-medium">Page Content</span>
+</a>
+</nav>
+<div class="mt-auto px-4 border-t border-on-primary/10 pt-4">
+<a class="text-on-primary-container opacity-80 hover:opacity-100 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body text-sm font-medium">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar Anchor -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant flex items-center justify-between px-8 z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline text-lg font-semibold text-primary dark:text-inverse-primary">Ministries &amp; Parishes</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-semibold text-on-surface">Fr. John Ssali</p>
+<p class="text-xs text-on-surface-variant">Archdiocese Admin</p>
+</div>
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="A professional headshot of a mature priest in clerical clothing. He is smiling warmly against a soft-focus office background. The lighting is bright and clean, reflecting a high-end corporate or organizational aesthetic with a calm, trustworthy mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7DyVTw3LQF2sAe5J20fwQBe5WHQ5BJjAIIrq-NZ3qQDEKYHy3y2oynagsO4JEgnVFG0LVnOpxw1p1F1EIxXTPIxI5o6grH13IiNFGzZ0yqLnE4koc9wXevqVqxYq78FqAaEdWSc3QB3F4PNErcuNhAeuxpqENw8woH56UUDXFRBbf6adAV3iN_hMraJ8s2KDUlTgkcaYvoBGuI3QZNs1HZEZv_4zia5f1Sn9ihCkcQwXlYTeDXb3SOxQq5S5jVTjnet4c_vOlTQ"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-surface-container-lowest">
+<div class="p-8 max-w-[1200px] mx-auto">
+<!-- Page Header Controls -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+<div>
+<h1 class="font-headline text-3xl font-bold text-on-surface tracking-tight">Organization Hierarchy</h1>
+<p class="text-on-surface-variant mt-1">Manage the structure of the Kampala Archdiocese</p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container rounded-lg font-label text-sm font-semibold hover:bg-primary transition-all active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+            + Add Vicariate
+          </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-sm font-semibold hover:bg-secondary-fixed-dim transition-all active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+            + Add Deanery
+          </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-variant text-on-surface-variant rounded-lg font-label text-sm font-semibold hover:bg-outline-variant transition-all active:scale-95 shadow-sm border border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+            + Add Parish
+          </button>
+</div>
+</div>
+<!-- Hierarchy Tree Table -->
+<div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Table Head -->
+<div class="grid grid-cols-12 bg-surface-container-high border-b border-outline-variant px-6 py-4">
+<div class="col-span-5 text-sm font-bold text-on-surface-variant uppercase tracking-wider font-label">Entity Name</div>
+<div class="col-span-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider font-label">Assigned Leader</div>
+<div class="col-span-3 text-sm font-bold text-on-surface-variant uppercase tracking-wider font-label">Status &amp; Stats</div>
+<div class="col-span-2 text-right text-sm font-bold text-on-surface-variant uppercase tracking-wider font-label">Actions</div>
+</div>
+<!-- Tree Content -->
+<div class="divide-y divide-outline-variant">
+<!-- Vicariate Level 1 -->
+<div class="group">
+<div class="grid grid-cols-12 items-center px-6 py-5 hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-primary-container p-2 bg-primary-fixed rounded-lg">account_balance</span>
+<div>
+<h3 class="font-bold text-on-surface text-lg">Kampala Central Vicariate</h3>
+<p class="text-xs text-on-surface-variant font-label">Archdiocese Center</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-sm text-on-surface-variant italic">Vicar General</span>
+</div>
+<div class="col-span-3 flex gap-2">
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs font-bold rounded-full">6 Deaneries</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-xs font-bold rounded-full">38 Parishes</span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary-container transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+<!-- Deanery Level 2 -->
+<div class="bg-surface-container-low">
+<div class="relative group/row">
+<div class="grid grid-cols-12 items-center pl-16 pr-6 py-4 hover:bg-surface-container-high transition-colors">
+<div class="hierarchy-line"></div>
+<div class="hierarchy-connector"></div>
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-secondary-container p-1.5 bg-on-secondary-fixed rounded-md text-[18px]">hub</span>
+<div>
+<h4 class="font-semibold text-on-surface">Christ the King Deanery</h4>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Central Hub</p>
+</div>
+</div>
+<div class="col-span-2">
+<p class="text-sm text-on-surface">Msgr. Gerald Kalumba</p>
+</div>
+<div class="col-span-3">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed text-xs font-bold rounded-full">8 Parishes</span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-highest rounded-full text-on-surface-variant transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+<!-- Parish Level 3 -->
+<div class="bg-surface-container-lowest">
+<div class="relative group/parish">
+<div class="grid grid-cols-12 items-center pl-28 pr-6 py-3 hover:bg-surface-container-high/50 border-b border-outline-variant/30 last:border-0">
+<div class="hierarchy-line !left-[3.75rem]"></div>
+<div class="hierarchy-connector !left-[3.75rem]"></div>
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-tertiary-container p-1 bg-tertiary-fixed rounded text-[16px]">church</span>
+<div>
+<h5 class="text-sm font-medium text-on-surface">Christ the King Parish</h5>
+<p class="text-[10px] text-on-surface-variant">Colville St, Kampala</p>
+</div>
+</div>
+<div class="col-span-2">
+<p class="text-xs text-on-surface-variant">Fr. John Bosco</p>
+</div>
+<div class="col-span-3 flex items-center gap-3">
+<span class="flex items-center gap-1 text-[10px] font-bold text-status-published px-2 py-0.5 bg-green-50 rounded-full">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                          GPS ACTIVE
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-1 opacity-0 group-hover/parish:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-container-highest rounded-full text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</div>
+</div>
+<div class="relative group/parish">
+<div class="grid grid-cols-12 items-center pl-28 pr-6 py-3 hover:bg-surface-container-high/50 border-b border-outline-variant/30 last:border-0">
+<div class="hierarchy-line !left-[3.75rem] !bottom-[50%]"></div>
+<div class="hierarchy-connector !left-[3.75rem]"></div>
+<div class="col-span-5 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-tertiary-container p-1 bg-tertiary-fixed rounded text-[16px]">church</span>
+<div>
+<h5 class="text-sm font-medium text-on-surface">Holy Ghost Parish</h5>
+<p class="text-[10px] text-on-surface-variant">Plot 24, Industrial Area</p>
+</div>
+</div>
+<div class="col-span-2">
+<p class="text-xs text-on-surface-variant">Fr. Peter Mugisha</p>
+</div>
+<div class="col-span-3 flex items-center gap-3">
+<span class="flex items-center gap-1 text-[10px] font-bold text-on-surface-variant px-2 py-0.5 bg-surface-container-high rounded-full">
+<span class="material-symbols-outlined text-[12px]">location_off</span>
+                          NO GPS
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-1 opacity-0 group-hover/parish:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-container-highest rounded-full text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Vicariate Level 1 - Entebbe -->
+<div class="group">
+<div class="grid grid-cols-12 items-center px-6 py-5 hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-primary-container p-2 bg-primary-fixed rounded-lg">waves</span>
+<div>
+<h3 class="font-bold text-on-surface text-lg">Entebbe Vicariate</h3>
+<p class="text-xs text-on-surface-variant font-label">Lakeside Region</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-sm text-on-surface">Msgr. Charles Kasibante</span>
+</div>
+<div class="col-span-3 flex gap-2">
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs font-bold rounded-full">4 Deaneries</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-xs font-bold rounded-full">26 Parishes</span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary-container transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+</div>
+<!-- Vicariate Level 1 - Wakiso -->
+<div class="group">
+<div class="grid grid-cols-12 items-center px-6 py-5 hover:bg-surface-container transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-primary-container p-2 bg-primary-fixed rounded-lg">landscape</span>
+<div>
+<h3 class="font-bold text-on-surface text-lg">Wakiso Vicariate</h3>
+<p class="text-xs text-on-surface-variant font-label">Greater Wakiso Area</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-sm text-on-surface-variant italic">Unassigned</span>
+</div>
+<div class="col-span-3 flex gap-2">
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs font-bold rounded-full">5 Deaneries</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-xs font-bold rounded-full">32 Parishes</span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary-container transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-error-container rounded-full text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Stats -->
+<div class="bg-surface-container-lowest p-4 flex justify-between items-center border-t border-outline-variant">
+<p class="text-xs text-on-surface-variant">Showing all entities for Kampala Archdiocese</p>
+<div class="flex gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-xs font-bold text-on-surface">4 Vicariates</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-on-secondary-fixed"></span>
+<span class="text-xs font-bold text-on-surface">24 Deaneries</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="text-xs font-bold text-on-surface">153 Parishes</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Action Floating Card (Asymmetric Layout element) -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-primary text-on-primary p-6 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+<div class="z-10">
+<h3 class="font-headline text-xl font-bold mb-2">Hierarchy Health</h3>
+<p class="text-on-primary/70 text-sm leading-relaxed">92% of parishes have complete metadata and GPS coordinates.</p>
+</div>
+<button class="z-10 mt-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
+            Run Audit <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+<div class="absolute -bottom-6 -right-6 opacity-10">
+<span class="material-symbols-outlined text-[120px]">verified</span>
+</div>
+</div>
+<div class="md:col-span-2 bg-surface-container-high p-6 rounded-2xl border border-outline-variant flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[32px]">tips_and_updates</span>
+</div>
+<div>
+<h3 class="font-headline text-lg font-bold text-on-surface">Pro Tip: Bulk Import</h3>
+<p class="text-on-surface-variant text-sm mt-1">You can upload an Excel file to update GPS coordinates for multiple parishes at once. Download the template from the Media section.</p>
+<button class="mt-3 text-sm font-bold text-primary hover:underline transition-all">Download Template</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Suppressed as per rules for Details/Settings/Transactional, but often used in Dashboard - we will keep it subtle for top-level admin actions if needed, but per instructions, we omit on Details-heavy pages. Here we focus on the Top Actions instead) -->
+</body></html>
