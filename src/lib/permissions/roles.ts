@@ -22,6 +22,30 @@ export const ROLES_BY_LEVEL: Record<HierarchyLevel, AppRole[]> = {
 
 export const ADMIN_ROLES: AppRole[] = ["super_admin", "archdiocese_admin"];
 
+export const SELF_REGISTERABLE_LEVELS: Exclude<HierarchyLevel, "archdiocese">[] = [
+  "vicariate",
+  "deanery",
+  "parish",
+];
+
+export const LEVEL_LABELS: Record<HierarchyLevel, string> = {
+  archdiocese: "Archdiocese",
+  vicariate: "Vicariate",
+  deanery: "Deanery",
+  parish: "Parish",
+};
+
+export const ROLE_LABELS: Record<AppRole, string> = {
+  super_admin: "Super Admin",
+  archdiocese_admin: "Archdiocese Admin",
+  vicariate_head: "Vicariate Head",
+  vicariate_staff: "Vicariate Staff",
+  deanery_head: "Deanery Head",
+  deanery_staff: "Deanery Staff",
+  parish_head: "Parish Head",
+  parish_data_entry: "Parish Data Entry",
+};
+
 export function isAdminRole(role: AppRole): boolean {
   return ADMIN_ROLES.includes(role);
 }

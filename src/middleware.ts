@@ -9,7 +9,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/", "/about", "/ministries", "/contact"];
-const AUTH_PATHS = ["/login", "/signup", "/verify-email", "/forgot-password"];
+const AUTH_PATHS = ["/login", "/signup", "/verify-email", "/forgot-password", "/auth/callback"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -47,15 +47,6 @@ export async function middleware(request: NextRequest) {
   if (!isAuthed && !isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthed && isAuthPage) {
-    // Approval/assignment status is checked by (dashboard)/layout.tsx,
-    // not here — this redirect only avoids showing a signed-in user the
-    // login/signup form again.
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
