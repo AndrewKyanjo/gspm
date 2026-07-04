@@ -11,6 +11,7 @@
 // (show a login page, a pending-approval page, etc).
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { AccessContext } from "@/types/auth";
 
 export async function getAccessContext(): Promise<AccessContext | null> {
@@ -21,8 +22,9 @@ export async function getAccessContext(): Promise<AccessContext | null> {
     return null;
   }
   const userId = userData.user.id;
+  const adminSupabase = createAdminClient();
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await adminSupabase
     .from("profiles")
     .select("account_status, is_active")
     .eq("id", userId)
@@ -43,7 +45,7 @@ export async function getAccessContext(): Promise<AccessContext | null> {
     return null;
   }
 
-  const { data: assignment, error: assignmentError } = await supabase
+  const { data: assignment, error: assignmentError } = await adminSupabase
     .from("user_assignments")
     .select("role, level, archdiocese_id, vicariate_id, deanery_id, parish_id, is_active")
     .eq("user_id", userId)
