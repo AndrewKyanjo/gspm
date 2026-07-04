@@ -7,6 +7,7 @@
 // "Pending Approval" vs "Access Denied" — instead of a generic error.
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getAccessContext } from "./getAccessContext";
 import type { AccessContext } from "@/types/auth";
 
@@ -25,13 +26,15 @@ export async function requireApprovedUser(): Promise<ApprovedUserResult> {
     return { status: "unauthenticated" };
   }
 
-  const { data: profile } = await supabase
+  const adminSupabase = createAdminClient();
+
+  const { data: profile, error: profileError } = await adminSupabase
     .from("profiles")
     .select("account_status, is_active")
     .eq("id", userData.user.id)
     .single();
 
-  if (!profile) {
+  if (profileError || !profile) {
     return { status: "unauthenticated" };
   }
 
