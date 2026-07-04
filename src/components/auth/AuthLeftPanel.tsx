@@ -5,7 +5,8 @@ export default function AuthLeftPanel() {
             <div className="absolute inset-0 z-0">
                 <img
                     className="w-full h-full object-cover opacity-60"
-                    data-alt="A serene and majestic interior view of a historic cathedral in Kampala, featuring high arched ceilings and soft sunlight streaming through stained glass windows. The atmosphere is quiet and reverent, conveying a sense of spiritual peace and communal stewardship. The lighting is ethereal and warm, highlighting the intricate architectural details with a soft glow, aligning with a professional and compassionate organizational aesthetic."
+                    alt=""
+                    aria-hidden="true"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZF9Kre0nW8abz3PdEQVrKJLiV-VtLm2PI9sMX8Cv8bmasDtM2vEwtrh7SLPDf9gW7xEqxXWtz-V11mUq31jb53cRstA-KqG_vw-TVOqt25728PAD-MO6QCsmWWV3zcHYqqL7n_inBKBH8il5yzQJMaHNbpN9V6trZFYt70svURzY3N1Px4Zl9aF3BFOnRqLeEBPnLJniVaxvED34Lx075r8jxUiJLCoToA3OyxXCEna6npl8SXHaS_QCGNZc3Sb9KYCmWQXefL40"
                 />
             </div>
@@ -30,8 +31,8 @@ export default function AuthLeftPanel() {
                         Fostering Hope through Service.
                     </h1>
                     <p className="font-body-lg text-body-lg text-primary-fixed opacity-90 leading-relaxed italic">
-                        "Serving the Good Samaritans and Prisons Ministry across
-                        the Kampala Archdiocese."
+                        &ldquo;Serving the Good Samaritans and Prisons Ministry across
+                        the Kampala Archdiocese.&rdquo;
                     </p>
                 </div>
                 <div

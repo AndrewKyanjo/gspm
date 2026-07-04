@@ -1,4 +1,5 @@
 // src/app/(auth)/login/page.tsx
+import Link from "next/link";
 import LoginForm from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
@@ -38,6 +39,18 @@ export default function LoginPage() {
                             or
                         </span>
                     </div>
+                </div>
+
+                <div className="rounded-lg border border-outline-variant bg-surface-container p-4 text-center">
+                    <p className="text-sm text-on-surface">
+                        Need portal access for your vicariate, deanery, or parish?
+                    </p>
+                    <Link
+                        href="/signup"
+                        className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+                    >
+                        Request an account
+                    </Link>
                 </div>
 
                 {/* Footer links */}
