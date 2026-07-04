@@ -1,6 +1,5 @@
 // src/app/(auth)/login/page.tsx
 import LoginForm from "@/components/auth/LoginForm";
-import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 export default function LoginPage() {
     return (
@@ -40,9 +39,6 @@ export default function LoginPage() {
                         </span>
                     </div>
                 </div>
-
-                {/* Google sign in */}
-                <GoogleSignInButton />
 
                 {/* Footer links */}
                 <div className="mt-8 pt-6 border-t border-outline-variant flex flex-wrap justify-center gap-6">
