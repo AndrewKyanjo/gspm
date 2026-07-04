@@ -43,8 +43,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
  */
 export async function getDashboardHomeForCurrentUser(): Promise<string> {
   const result = await requireApprovedUser();
-  if (result.status !== "ok") {
-    redirect("/pending-approval");
+
+  switch (result.status) {
+    case "unauthenticated":
+      redirect("/login");
+    case "pending_approval":
+      redirect("/pending-approval");
+    case "rejected_or_suspended":
+      redirect("/access-denied");
+    case "no_assignment":
+      redirect("/pending-approval");
+    case "ok":
+      break;
   }
+
   return DASHBOARD_HOME_BY_ROLE[result.context.role];
 }
