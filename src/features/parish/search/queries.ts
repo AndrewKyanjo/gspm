@@ -21,6 +21,7 @@ export async function searchParishWorkspace(parishId: string, query: string): Pr
   }
 
   const supabase = createAdminClient();
+
   const [reportResponse, documents, contributions, mediaGroups, projects] = await Promise.all([
     supabase
       .from("parish_reports")
