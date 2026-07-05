@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Parish Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#8591b0",
+                        "secondary-container": "#ffd169",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#bac6e7",
+                        "surface": "#FFFFFF",
+                        "tertiary-fixed-dim": "#c7c6c4",
+                        "tertiary": "#151615",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1e2a44",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-fixed": "#1b1c1a",
+                        "secondary": "#785a00",
+                        "tertiary-fixed": "#e3e2df",
+                        "on-primary-fixed": "#0e1b34",
+                        "on-tertiary-fixed-variant": "#464745",
+                        "inverse-primary": "#bac6e7",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-high": "#e0e9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#525e7b",
+                        "outline": "#75777e",
+                        "on-secondary-fixed": "#251a00",
+                        "on-secondary-container": "#765900",
+                        "primary": "#08152e",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#28313d",
+                        "warning": "#B4740E",
+                        "outline-variant": "#c5c6ce",
+                        "danger": "#A63A3A",
+                        "surface-container-low": "#eff4ff",
+                        "success": "#2F6B4F",
+                        "surface-variant": "#dae3f4",
+                        "on-secondary-fixed-variant": "#5b4300",
+                        "on-background": "#131c28",
+                        "on-tertiary-container": "#92928f",
+                        "on-primary-fixed-variant": "#3b4662",
+                        "neutral-badge": "#6B7280",
+                        "tertiary-container": "#2a2b29",
+                        "surface-dim": "#d2daeb",
+                        "on-surface": "#131c28",
+                        "on-surface-variant": "#45464d",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#ffdf9b",
+                        "text-primary": "#1A1A1A",
+                        "background": "#f8f9ff",
+                        "secondary-fixed-dim": "#ecc15a",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#d9e2ff",
+                        "surface-container-highest": "#dae3f4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "260px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "sidebar-collapsed": "64px",
+                        "container-max": "1440px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "report-title": [
+                            "\"Source Serif 4\""
+                        ],
+                        "body-lg": [
+                            "IBM Plex Sans"
+                        ],
+                        "headline-md": [
+                            "IBM Plex Sans"
+                        ],
+                        "data-table": [
+                            "IBM Plex Sans"
+                        ],
+                        "body-md": [
+                            "IBM Plex Sans"
+                        ],
+                        "headline-lg": [
+                            "IBM Plex Sans"
+                        ],
+                        "label-sm": [
+                            "IBM Plex Sans"
+                        ]
+                    },
+                    "fontSize": {
+                        "report-title": [
+                            "32px",
+                            {
+                                "lineHeight": "40px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "body-lg": [
+                            "16px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "headline-md": [
+                            "20px",
+                            {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "data-table": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.01em",
+                                "fontWeight": "450"
+                            }
+                        ],
+                        "body-md": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "headline-lg": [
+                            "24px",
+                            {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "label-sm": [
+                            "12px",
+                            {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                            }
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #f8f9ff;
+            color: #131c28;
+            font-family: 'IBM Plex Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full w-sidebar-width left-0 top-0 py-gutter space-y-stack-lg bg-primary dark:bg-primary-container z-50">
+<div class="px-gutter">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary">church</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-on-primary-container truncate">Archdiocese of Kampala</h1>
+<p class="font-label-sm text-label-sm text-on-primary/70">Administrative Scope</p>
+</div>
+</div>
+<div class="mt-4">
+<span class="inline-block px-3 py-1 rounded-full bg-secondary-container/20 text-secondary-container font-label-sm text-label-sm border border-secondary-container/30">Scope Badge</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-primary font-bold opacity-100 scale-[0.99] duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="edit_document">edit_document</span>
+<span class="font-body-md text-body-md">Data Entry</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Users</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="px-4 mt-auto">
+<ul class="space-y-1 border-t border-on-primary/10 pt-4">
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-body-md text-body-md">My Profile</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-gutter docked full-width top-0 sticky z-40 bg-surface dark:bg-surface-bright border-b border-outline-variant dark:border-outline shadow-sm">
+<div class="flex items-center gap-6">
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary hidden lg:block">Archdiocese Management</h2>
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search..." type="text"/>
+</div>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-primary font-bold border-b-2 border-secondary font-body-md text-body-md py-4 hover:text-primary transition-all duration-150 scale-95 duration-75" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium font-body-md text-body-md py-4 hover:text-primary transition-all duration-150" href="#">Reports</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex items-center gap-2 bg-secondary text-on-secondary px-4 py-2.5 rounded-md font-label-sm text-label-sm hover:bg-secondary-container hover:text-on-secondary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    + New Registration
+                </button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a female administrative worker in a brightly lit modern office. She is smiling softly, conveying a sense of calm competence and approachability. The lighting is soft and neutral, fitting a modern administrative dashboard aesthetic. The overall mood is welcoming and efficient." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1cp2L-dUMfJW9JXg06iOLDN450AY-ggzvSz4HYtZ1uVXtI7yHQjfVpa1XZYD9H467lQTpnpQR2t7Q6gt4TaWqr5PtA-aaSOqqBDF7EOnI_de9o04iQMszVUZteoUQLaZnLx8pJOzqQ4Yh4B9h_ZkHgBt85-t-Hvb8780x6LTf3WjUvF9jNkOtuQphI6uh6nWrCuvCxuS2OR0wpwhrqBaG1cIyT48vnkCIWfOyurVBqh-ddVr0zppQQw"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-gutter">
+<div class="max-w-container-max mx-auto space-y-stack-lg pb-12">
+<!-- Welcome Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div>
+<h1 class="font-report-title text-report-title text-primary mb-1">Welcome back, Jane</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                            St. Charles Lwanga Parish
+                        </p>
+</div>
+<div class="flex items-center gap-2 bg-surface px-4 py-2 border border-outline-variant rounded-md shadow-sm">
+<span class="w-2 h-2 bg-success rounded-full"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Last Submission: July 1, 2026</span>
+</div>
+</div>
+<!-- Stat Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Total Households -->
+<div class="bg-surface rounded-lg border border-outline-variant p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary-fixed-dim/20 rounded-bl-full -z-0"></div>
+<div class="flex justify-between items-start z-10 mb-4">
+<h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Total Households</h3>
+<span class="material-symbols-outlined text-primary">home</span>
+</div>
+<div class="z-10">
+<div class="font-headline-lg text-headline-lg text-primary text-3xl mb-1">1,240</div>
+<div class="font-label-sm text-label-sm text-success flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                 +2.4% vs last month
+                             </div>
+</div>
+</div>
+<!-- Total Parishioners -->
+<div class="bg-surface rounded-lg border border-outline-variant p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 right-0 w-24 h-24 bg-secondary-container/20 rounded-bl-full -z-0"></div>
+<div class="flex justify-between items-start z-10 mb-4">
+<h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Total Parishioners</h3>
+<span class="material-symbols-outlined text-secondary">groups</span>
+</div>
+<div class="z-10">
+<div class="font-headline-lg text-headline-lg text-primary text-3xl mb-1">4,850</div>
+<div class="font-label-sm text-label-sm text-success flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                 +1.1% vs last month
+                             </div>
+</div>
+</div>
+<!-- Records Added -->
+<div class="bg-surface rounded-lg border border-outline-variant p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 right-0 w-24 h-24 bg-surface-tint/10 rounded-bl-full -z-0"></div>
+<div class="flex justify-between items-start z-10 mb-4">
+<h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Records Added This Month</h3>
+<span class="material-symbols-outlined text-surface-tint">post_add</span>
+</div>
+<div class="z-10">
+<div class="font-headline-lg text-headline-lg text-primary text-3xl mb-1">42</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                                 On track
+                             </div>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout for Chart and List -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Trend Chart (Spans 2 columns) -->
+<div class="lg:col-span-2 bg-surface rounded-lg border border-outline-variant shadow-sm flex flex-col h-[400px]">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary">Registration Growth</h3>
+<select class="bg-surface-container-low border border-outline-variant rounded-md font-label-sm text-label-sm px-3 py-1.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none text-on-surface">
+<option>This Year</option>
+<option>Last Year</option>
+<option>All Time</option>
+</select>
+</div>
+<div class="flex-1 p-6 relative w-full h-full bg-surface">
+<!-- Visual placeholder for a chart -->
+<div class="absolute inset-6 flex items-end gap-2">
+<!-- Decorative bars to simulate a chart -->
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[30%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[45%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[40%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[60%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[55%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[75%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-primary-fixed-dim/30 rounded-t-sm h-[80%] hover:bg-primary-fixed-dim transition-colors group relative"></div>
+<div class="w-full bg-secondary-container/80 rounded-t-sm h-[95%] shadow-[0_0_10px_rgba(255,209,105,0.3)]"></div>
+</div>
+<!-- X axis labels simulated -->
+<div class="absolute bottom-1 left-6 right-6 flex justify-between text-[10px] text-outline uppercase tracking-wider">
+<span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+</div>
+</div>
+</div>
+<!-- Recent Activity List -->
+<div class="bg-surface rounded-lg border border-outline-variant shadow-sm flex flex-col h-[400px]">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary">Recent Activity</h3>
+<button class="text-secondary hover:text-secondary-container font-label-sm text-label-sm">View All</button>
+</div>
+<div class="flex-1 overflow-y-auto p-2">
+<ul class="divide-y divide-outline-variant/50">
+<li class="p-4 hover:bg-surface-container-low transition-colors rounded-md group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary">person_add</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">New Household Registered</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Kigongo Family - 4 members</p>
+<p class="text-[11px] text-outline mt-1">2 hours ago</p>
+</div>
+</div>
+</li>
+<li class="p-4 hover:bg-surface-container-low transition-colors rounded-md group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">update</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">Record Updated</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sacrament details added for Mary Mukasa</p>
+<p class="text-[11px] text-outline mt-1">5 hours ago</p>
+</div>
+</div>
+</li>
+<li class="p-4 hover:bg-surface-container-low transition-colors rounded-md group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary">person_add</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">New Individual Registered</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">John B. Kato</p>
+<p class="text-[11px] text-outline mt-1">Yesterday</p>
+</div>
+</div>
+</li>
+<li class="p-4 hover:bg-surface-container-low transition-colors rounded-md group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-success">check_circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">Monthly Report Generated</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">June 2026 Parish Summary</p>
+<p class="text-[11px] text-outline mt-1">July 1, 2026</p>
+</div>
+</div>
+</li>
+<li class="p-4 hover:bg-surface-container-low transition-colors rounded-md group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary">person_add</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium group-hover:text-primary transition-colors">New Household Registered</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sserwadda Family - 2 members</p>
+<p class="text-[11px] text-outline mt-1">June 29, 2026</p>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
