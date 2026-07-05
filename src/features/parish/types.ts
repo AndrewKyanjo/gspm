@@ -106,3 +106,44 @@ export type ParishDocumentItem = {
   updatedAt: string | null;
   downloadUrl: string | null;
 };
+
+export type ParishMediaItem = {
+  name: string;
+  path: string;
+  monthKey: string;
+  monthLabel: string;
+  size: number | null;
+  updatedAt: string | null;
+  previewUrl: string | null;
+};
+
+export type ParishMediaMonthGroup = {
+  monthKey: string;
+  monthLabel: string;
+  items: ParishMediaItem[];
+};
+
+export type ParishProject = {
+  id: string;
+  title: string;
+  category: string | null;
+  status: string | null;
+  location: string | null;
+  description: string | null;
+  startDate: string | null;
+  targetEndDate: string | null;
+  budgetAmount: number | null;
+  amountRaised: number | null;
+  coverImagePath: string | null;
+  coverImageUrl: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+export type ParishSearchResult = {
+  module: "reports" | "documents" | "contributions" | "media" | "projects";
+  title: string;
+  description: string;
+  href: string;
+  meta: string;
+};
