@@ -1,0 +1,33 @@
+import {
+  BarChart3,
+  FileText,
+  FolderKanban,
+  HandCoins,
+  House,
+  Image,
+  Settings,
+} from "lucide-react";
+import { DashboardSidebar, type DashboardNavigationItem } from "@/components/dashboard/shared/dashboard-sidebar";
+
+const parishNavigation: DashboardNavigationItem[] = [
+  { href: "/dashboard/parish", label: "Overview", icon: House },
+  { href: "/dashboard/parish/reports", label: "Reports", icon: BarChart3 },
+  { href: "/dashboard/parish/contributions", label: "Contributions", icon: HandCoins },
+  { href: "/dashboard/parish/documents", label: "Documents", icon: FileText },
+  { href: "/dashboard/parish/media", label: "Media", icon: Image },
+  { href: "/dashboard/parish/projects", label: "Projects", icon: FolderKanban },
+  { href: "/dashboard/parish/settings", label: "Settings", icon: Settings },
+];
+
+export function ParishSidebar({ pathname }: { pathname: string }) {
+  return (
+    <DashboardSidebar
+      pathname={pathname}
+      navigation={parishNavigation}
+      title="Parish Administration"
+      subtitle="Quiet, high-trust operations for parish reporting, records, and local ministry planning."
+      footerTitle="Parish workspace"
+      footerDescription="One shell for reports, media, records, and operational review."
+    />
+  );
+}

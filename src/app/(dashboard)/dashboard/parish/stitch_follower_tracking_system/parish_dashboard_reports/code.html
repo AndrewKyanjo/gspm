@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Archdiocese Management - Parish Reports</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#464745",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#ffd169",
+                        "outline-variant": "#c5c6ce",
+                        "on-secondary-fixed": "#251a00",
+                        "danger": "#A63A3A",
+                        "tertiary-fixed-dim": "#c7c6c4",
+                        "on-primary-fixed": "#0e1b34",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#2a2b29",
+                        "primary-fixed-dim": "#bac6e7",
+                        "on-surface": "#131c28",
+                        "tertiary": "#151615",
+                        "tertiary-fixed": "#e3e2df",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#d2daeb",
+                        "inverse-primary": "#bac6e7",
+                        "surface-tint": "#525e7b",
+                        "on-tertiary-container": "#92928f",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "secondary": "#785a00",
+                        "on-secondary-fixed-variant": "#5b4300",
+                        "primary-container": "#1e2a44",
+                        "inverse-surface": "#28313d",
+                        "secondary-fixed-dim": "#ecc15a",
+                        "background": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "warning": "#B4740E",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#dae3f4",
+                        "surface-container-high": "#e0e9f9",
+                        "inverse-on-surface": "#eaf1ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#FFFFFF",
+                        "primary-fixed": "#d9e2ff",
+                        "on-error-container": "#93000a",
+                        "neutral-badge": "#6B7280",
+                        "success": "#2F6B4F",
+                        "on-secondary-container": "#765900",
+                        "on-tertiary-fixed": "#1b1c1a",
+                        "on-primary-container": "#8591b0",
+                        "on-surface-variant": "#45464d",
+                        "outline": "#75777e",
+                        "text-primary": "#1A1A1A",
+                        "on-primary-fixed-variant": "#3b4662",
+                        "on-background": "#131c28",
+                        "secondary-fixed": "#ffdf9b",
+                        "surface-variant": "#dae3f4",
+                        "primary": "#08152e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "stack-lg": "32px",
+                        "sidebar-width": "260px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "stack-md": "16px",
+                        "sidebar-collapsed": "64px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "report-title": ["\"Source Serif 4\""],
+                        "data-table": ["IBM Plex Sans"],
+                        "body-lg": ["IBM Plex Sans"],
+                        "label-sm": ["IBM Plex Sans"],
+                        "headline-lg": ["IBM Plex Sans"],
+                        "body-md": ["IBM Plex Sans"],
+                        "headline-md": ["IBM Plex Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .font-report-title { font-family: "Source Serif 4", serif; font-size: 32px; line-height: 40px; font-weight: 600; }
+        .text-report-title { font-size: 32px; line-height: 40px; font-weight: 600; }
+        .font-data-table { font-family: "IBM Plex Sans", sans-serif; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; font-weight: 450; }
+        .text-data-table { font-size: 14px; line-height: 20px; letter-spacing: 0.01em; font-weight: 450; }
+        .font-body-lg { font-family: "IBM Plex Sans", sans-serif; font-size: 16px; line-height: 24px; font-weight: 400; }
+        .text-body-lg { font-size: 16px; line-height: 24px; font-weight: 400; }
+        .font-label-sm { font-family: "IBM Plex Sans", sans-serif; font-size: 12px; line-height: 16px; letter-spacing: 0.05em; font-weight: 600; }
+        .text-label-sm { font-size: 12px; line-height: 16px; letter-spacing: 0.05em; font-weight: 600; }
+        .font-headline-lg { font-family: "IBM Plex Sans", sans-serif; font-size: 24px; line-height: 32px; font-weight: 600; }
+        .text-headline-lg { font-size: 24px; line-height: 32px; font-weight: 600; }
+        .font-body-md { font-family: "IBM Plex Sans", sans-serif; font-size: 14px; line-height: 20px; font-weight: 400; }
+        .text-body-md { font-size: 14px; line-height: 20px; font-weight: 400; }
+        .font-headline-md { font-family: "IBM Plex Sans", sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; }
+        .text-headline-md { font-size: 20px; line-height: 28px; font-weight: 600; }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<aside class="fixed h-full w-sidebar-width left-0 top-0 bg-primary dark:bg-primary-container z-50 flex flex-col py-gutter space-y-stack-lg hidden md:flex">
+<div class="px-gutter mb-stack-md">
+<div class="flex items-center gap-stack-sm mb-stack-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="church">church</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-on-primary-container leading-tight">Archdiocese of Kampala</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container opacity-80">Administrative Scope</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-container text-on-secondary-fixed text-xs font-bold uppercase tracking-wider">Scope Badge</span>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="edit_document">edit_document</span>
+<span class="font-body-md text-body-md font-medium">Data Entry</span>
+</a>
+<a class="flex items-center gap-stack-md px-4 py-3 border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-primary font-bold opacity-100 scale-[0.99] duration-200 rounded-r-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assessment" data-weight="fill" style="font-variation-settings: 'FILL' 1;">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md font-medium">Users</span>
+</a>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md font-medium">Settings</span>
+</a>
+</nav>
+<div class="px-4 border-t border-on-primary-fixed-variant pt-stack-md">
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-body-md text-body-md font-medium">My Profile</span>
+</a>
+<a class="flex items-center gap-stack-md px-4 py-3 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors rounded-lg mt-1" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-md text-body-md font-medium">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-sidebar-width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 sticky z-40 bg-surface dark:bg-surface-bright border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center h-16 px-gutter">
+<div class="flex items-center gap-stack-lg">
+<div class="md:hidden">
+<button class="text-primary p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary hidden lg:block">Archdiocese Management</h2>
+<nav class="hidden md:flex gap-stack-md ml-stack-lg h-16">
+<a class="flex items-center h-full text-on-surface-variant font-medium hover:text-primary transition-all duration-150 font-body-md text-body-md px-2" href="#">Dashboard</a>
+<a class="flex items-center h-full text-primary font-bold border-b-2 border-secondary font-body-md text-body-md px-2 scale-95 duration-75" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-fixed px-4 py-2 rounded-lg font-label-sm text-label-sm uppercase font-bold tracking-wider transition-colors shadow-sm hidden sm:block">
+                    + New Registration
+                </button>
+<div class="w-9 h-9 rounded-full bg-surface-variant border border-outline-variant overflow-hidden ml-2 cursor-pointer">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A professional portrait photo of an administrative user in a formal setting, neutral background, soft corporate lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCL8pkVVrT6yMOpkRLQYfGLf81amE7oD8H69TVFQicy2_ilvNm2f3fDOZxhrSHk0O8G0MdqkK90ECTDxZFsAWfIvgIUQ-YccQnUrhhttI8JbH41xkiMWztKLTPM-F4YaRDiGdyMoeYnTVQQfy6Ojn51J2LYJvYT7IEEtNUJlzfT5K9jvASL8C_UVnkslkBXJNbP_ozSKNHSQglBE6JPYMEdBiXXdQ2GeglXQrZG5SwB3hN2J80rAKT9Q"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-margin-mobile md:p-gutter max-w-container-max mx-auto w-full flex flex-col gap-stack-lg">
+<header class="mb-stack-sm">
+<h1 class="font-report-title text-report-title text-on-surface">Parish Reports</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-3xl">Access standard administrative reports, review historical data exports, or generate custom analytical datasets for diocese-wide strategic planning.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Templates & Generator (Span 8) -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<!-- Standard Templates Bento -->
+<section class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden p-stack-lg">
+<div class="flex items-center justify-between mb-stack-md">
+<h3 class="font-headline-md text-headline-md text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="topic">topic</span>
+                                Standard Report Templates
+                            </h3>
+<button class="text-secondary font-label-sm text-label-sm hover:underline">View All</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<!-- Template 1 -->
+<div class="bg-surface-container-low rounded-lg p-stack-md border border-outline-variant hover:border-secondary transition-colors cursor-pointer group flex flex-col h-full">
+<div class="w-10 h-10 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface text-base mb-1">Monthly Financial Return</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm flex-1">Standardized ledger summary detailing parish income, tithes, and operational expenditures.</p>
+<div class="mt-stack-sm pt-stack-sm border-t border-outline-variant/50 flex justify-between items-center text-xs text-on-surface-variant">
+<span>Last run: Oct 1</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<!-- Template 2 -->
+<div class="bg-surface-container-low rounded-lg p-stack-md border border-outline-variant hover:border-secondary transition-colors cursor-pointer group flex flex-col h-full">
+<div class="w-10 h-10 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="diversity_3">diversity_3</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface text-base mb-1">Annual Census Report</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm flex-1">Comprehensive demographic overview of registered parishioners and household structures.</p>
+<div class="mt-stack-sm pt-stack-sm border-t border-outline-variant/50 flex justify-between items-center text-xs text-on-surface-variant">
+<span>Last run: Jan 15</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<!-- Template 3 -->
+<div class="bg-surface-container-low rounded-lg p-stack-md border border-outline-variant hover:border-secondary transition-colors cursor-pointer group flex flex-col h-full">
+<div class="w-10 h-10 rounded bg-primary-fixed text-on-primary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="water_drop">water_drop</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface text-base mb-1">Sacramental Statistics</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm flex-1">Aggregated data on baptisms, confirmations, marriages, and other rites administered.</p>
+<div class="mt-stack-sm pt-stack-sm border-t border-outline-variant/50 flex justify-between items-center text-xs text-on-surface-variant">
+<span>Last run: Sep 30</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Exports Table -->
+<section class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden flex-1">
+<div class="p-stack-md border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="history">history</span>
+                                Recent Exports
+                            </h3>
+<div class="flex gap-2">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant">
+<tr>
+<th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider">Report Name</th>
+<th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider">Date Generated</th>
+<th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider">Format</th>
+<th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider">Status</th>
+<th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-data-table text-data-table text-on-surface divide-y divide-outline-variant/50">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="description">description</span>
+                                            Q3 Financial Summary_2023
+                                        </td>
+<td class="py-3 px-4 text-on-surface-variant">Oct 12, 2023 14:30</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-surface-dim text-xs font-semibold">PDF</span></td>
+<td class="py-3 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-bold">Ready</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-secondary font-medium text-sm flex items-center justify-end gap-1 ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span> Download
+                                            </button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="grid_on">grid_on</span>
+                                            Parish_Census_Raw_Data
+                                        </td>
+<td class="py-3 px-4 text-on-surface-variant">Oct 10, 2023 09:15</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-surface-dim text-xs font-semibold">CSV</span></td>
+<td class="py-3 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-bold">Ready</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-secondary font-medium text-sm flex items-center justify-end gap-1 ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span> Download
+                                            </button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="description">description</span>
+                                            Sacramental_Register_YTD
+                                        </td>
+<td class="py-3 px-4 text-on-surface-variant">Oct 08, 2023 11:00</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-surface-dim text-xs font-semibold">PDF</span></td>
+<td class="py-3 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded-full bg-warning/10 text-warning text-xs font-bold">Expired</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-primary font-medium text-sm flex items-center justify-end gap-1 ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span> Rerun
+                                            </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: Custom Generator Panel (Span 4) -->
+<div class="lg:col-span-4">
+<section class="bg-surface rounded-xl border border-outline-variant shadow-sm p-stack-lg sticky top-24">
+<div class="mb-stack-md pb-stack-sm border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="tune">tune</span>
+                                Generate Custom Report
+                            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Configure parameters to generate specialized data exports.</p>
+</div>
+<form class="space-y-stack-md flex flex-col h-full">
+<!-- Date Range -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Date Range</label>
+<div class="grid grid-cols-2 gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="calendar_today">calendar_today</span>
+<input class="w-full pl-8 pr-3 py-2 bg-surface border border-outline-variant rounded-md text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Start Date" type="text" value="2023-01-01"/>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="calendar_today">calendar_today</span>
+<input class="w-full pl-8 pr-3 py-2 bg-surface border border-outline-variant rounded-md text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="End Date" type="text" value="2023-12-31"/>
+</div>
+</div>
+</div>
+<!-- Primary Metric -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Primary Data Metric</label>
+<select class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-md text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none">
+<option>Financial Contributions (Detailed)</option>
+<option>Attendance Tracking</option>
+<option>Sacramental Milestones</option>
+<option>Asset Management Audit</option>
+</select>
+</div>
+<!-- Parishes/Scope -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Scope</label>
+<select class="w-full px-3 py-2 bg-surface border border-outline-variant rounded-md text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none">
+<option>All Parishes (Diocese Wide)</option>
+<option>Northern Deanery</option>
+<option>Southern Deanery</option>
+<option>Custom Selection...</option>
+</select>
+</div>
+<!-- Format -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-2">Export Format</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="text-primary focus:ring-primary" name="format" type="radio" value="pdf"/>
+<span class="font-body-md text-body-md">PDF Summary</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="text-primary focus:ring-primary" name="format" type="radio" value="csv"/>
+<span class="font-body-md text-body-md">CSV Data</span>
+</label>
+</div>
+</div>
+<div class="pt-stack-md mt-auto">
+<button class="w-full bg-[#B8912F] hover:bg-secondary-fixed-dim text-white hover:text-on-secondary-fixed py-2.5 px-4 rounded-lg font-headline-md text-headline-md text-base transition-colors shadow-sm flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+                                    Generate Report
+                                </button>
+<p class="text-center font-label-sm text-label-sm text-on-surface-variant mt-3 font-normal opacity-70">Large datasets may take several minutes to compile.</p>
+</div>
+</form>
+</section>
+</div>
+</div>
+</main>
+</div>
+</body></html>
