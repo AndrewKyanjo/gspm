@@ -21,13 +21,8 @@ export async function searchParishWorkspace(parishId: string, query: string): Pr
   }
 
   const supabase = createAdminClient();
-  const [
-    { data: reportRows },
-    documents,
-    contributions,
-    mediaGroups,
-    projects,
-  ] = await Promise.all([
+
+  const [reportResponse, documents, contributions, mediaGroups, projects] = await Promise.all([
     supabase
       .from("parish_reports")
       .select("id, status, summary, challenges, recommendations, reporting_period_id")
@@ -39,13 +34,14 @@ export async function searchParishWorkspace(parishId: string, query: string): Pr
     getParishProjects(parishId),
   ]);
 
-  const reportingPeriodIds = [...new Set((reportRows ?? []).map((row) => row.reporting_period_id).filter(Boolean))];
+  const reportRows = reportResponse.data ?? [];
+  const reportingPeriodIds = [...new Set(reportRows.map((row) => row.reporting_period_id).filter(Boolean))];
   const { data: periods } = reportingPeriodIds.length
     ? await supabase.from("reporting_periods").select("id, year, month").in("id", reportingPeriodIds)
     : { data: [] as Array<{ id: string; year: number; month: number }> };
   const periodLabelMap = new Map((periods ?? []).map((period) => [period.id, `${period.month}/${period.year}`]));
 
-  const reportResults: ParishSearchResult[] = (reportRows ?? [])
+  const reportResults: ParishSearchResult[] = reportRows
     .filter((report) =>
       matchesQuery(
         [
@@ -79,10 +75,7 @@ export async function searchParishWorkspace(parishId: string, query: string): Pr
 
   const contributionResults: ParishSearchResult[] = contributions
     .filter((contribution) =>
-      matchesQuery(
-        [contribution.contributorName, contribution.contributionType, contribution.notes],
-        normalizedQuery
-      )
+      matchesQuery([contribution.contributorName, contribution.contributionType, contribution.notes], normalizedQuery)
     )
     .map((contribution) => ({
       module: "contributions",

@@ -1,0 +1,4 @@
+alter table if exists public.parish_reports
+drop constraint if exists parish_reports_reporting_period_id_parish_id_key;
+
+drop index if exists public.parish_reports_reporting_period_id_parish_id_key;
