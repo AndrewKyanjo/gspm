@@ -60,33 +60,12 @@ export async function createParishReport(
   };
 
   const supabase = createAdminClient();
-  const { data: existingReport, error: existingReportError } = await supabase
-    .from("parish_reports")
-    .select("id, status")
-    .eq("parish_id", context.parishId)
-    .eq("reporting_period_id", reportingPeriodId)
-    .maybeSingle();
-
-  if (existingReportError) {
-    return { error: existingReportError.message };
-  }
-
-  if (existingReport && existingReport.status && existingReport.status !== "draft") {
-    return {
-      error: `A ${existingReport.status} report already exists for this reporting period. Open the existing report from the reports page instead.`,
-    };
-  }
-
-  const mutation = existingReport
-    ? supabase.from("parish_reports").update(payload).eq("id", existingReport.id).select("id").single()
-    : supabase.from("parish_reports").insert(payload).select("id").single();
-
-  const { data, error } = await mutation;
+  const { data, error } = await supabase.from("parish_reports").insert(payload).select("id").single();
 
   if (error || !data) {
     if (error?.code === "23505") {
       return {
-        error: "A report for this reporting period already exists. Open it from the reports page and continue there.",
+        error: "Your database is still enforcing a one-report-per-period rule. Apply the migration that drops the old unique parish report constraint, then try again.",
       };
     }
 
