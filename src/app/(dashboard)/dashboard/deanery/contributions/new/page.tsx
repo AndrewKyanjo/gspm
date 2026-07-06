@@ -1,1 +1,5 @@
-export { default } from "@/components/layout/PlaceholderPage";
+import { redirect } from "next/navigation";
+
+export default async function DeaneryContributionsNewPage() {
+  redirect("/dashboard/deanery/contributions");
+}
