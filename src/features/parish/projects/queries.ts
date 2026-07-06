@@ -50,7 +50,9 @@ export async function getParishProjects(parishId: string): Promise<ParishProject
     return [];
   }
 
-  return Promise.all(data.map(async (row) => mapProject(row, await getProjectCoverUrl(row.cover_image_path ?? null))));
+  return Promise.all(
+    data.map(async (row) => mapProject(row, await getProjectCoverUrl(row.cover_image_path ?? null)))
+  );
 }
 
 export async function getParishProjectDetail(parishId: string, projectId: string): Promise<ParishProject | null> {

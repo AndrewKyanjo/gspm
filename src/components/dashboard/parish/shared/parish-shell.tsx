@@ -23,13 +23,7 @@ export function ParishShell({
     <div className="min-h-screen bg-surface md:flex">
       <ParishSidebar pathname={pathname} />
       <div className="min-w-0 flex-1">
-        <ParishTopbar
-          eyebrow={eyebrow}
-          title={title}
-          subtitle={subtitle}
-          actions={actions}
-          searchQuery={searchQuery}
-        />
+        <ParishTopbar eyebrow={eyebrow} title={title} subtitle={subtitle} actions={actions} searchQuery={searchQuery} />
         <main className="space-y-8 px-5 py-6 md:px-8">{children}</main>
       </div>
     </div>
