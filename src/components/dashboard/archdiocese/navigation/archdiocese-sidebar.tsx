@@ -12,8 +12,9 @@ import {
   Users,
 } from "lucide-react";
 import { DashboardSidebar, type DashboardNavigationItem } from "@/components/dashboard/shared/dashboard-sidebar";
+import type { AppRole } from "@/types/auth";
 
-const archdioceseNavigation: DashboardNavigationItem[] = [
+const ALL_ARCHDIOCESE_NAV_ITEMS: DashboardNavigationItem[] = [
   { href: "/dashboard/archdiocese/dashboard", label: "Overview", icon: House },
   { href: "/dashboard/archdiocese/vicariates", label: "Vicariates", icon: Building2 },
   { href: "/dashboard/archdiocese/deaneries", label: "Deaneries", icon: Landmark },
@@ -27,11 +28,30 @@ const archdioceseNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/archdiocese/settings", label: "Settings", icon: Settings },
 ];
 
-export function ArchdioceseSidebar({ pathname }: { pathname: string }) {
+/** Nav items hidden from archdiocese_data_entry — they lack admin powers. */
+const ADMIN_ONLY_LABELS = new Set(["Users", "Settings"]);
+
+function navigationForRole(role: AppRole): DashboardNavigationItem[] {
+  if (role === "archdiocese_data_entry") {
+    return ALL_ARCHDIOCESE_NAV_ITEMS.filter(
+      (item) => !ADMIN_ONLY_LABELS.has(item.label),
+    );
+  }
+
+  return ALL_ARCHDIOCESE_NAV_ITEMS;
+}
+
+export function ArchdioceseSidebar({
+  pathname,
+  role,
+}: {
+  pathname: string;
+  role?: AppRole;
+}) {
   return (
     <DashboardSidebar
       pathname={pathname}
-      navigation={archdioceseNavigation}
+      navigation={navigationForRole(role ?? "archdiocese_admin")}
       title="Archdiocese Executive"
       subtitle="System-wide oversight across hierarchy operations, approvals, finance, records, and parish performance."
       footerTitle="Executive console"

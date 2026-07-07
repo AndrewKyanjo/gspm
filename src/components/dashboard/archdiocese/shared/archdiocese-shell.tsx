@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DashboardTopbar } from "@/components/dashboard/shared/dashboard-topbar";
 import { ArchdioceseSidebar } from "../navigation/archdiocese-sidebar";
+import type { AppRole } from "@/types/auth";
 
 export function ArchdioceseShell({
   pathname,
@@ -11,6 +12,7 @@ export function ArchdioceseShell({
   searchAction = "/dashboard/archdiocese/parishes",
   searchPlaceholder = "Search parishes, deaneries, users, or reports",
   searchQuery,
+  role,
   children,
 }: {
   pathname: string;
@@ -21,11 +23,12 @@ export function ArchdioceseShell({
   searchAction?: string;
   searchPlaceholder?: string;
   searchQuery?: string;
+  role?: AppRole;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-surface md:flex">
-      <ArchdioceseSidebar pathname={pathname} />
+      <ArchdioceseSidebar pathname={pathname} role={role} />
       <div className="min-w-0 flex-1">
         <DashboardTopbar
           eyebrow={eyebrow}
