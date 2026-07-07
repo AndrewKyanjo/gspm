@@ -14,13 +14,20 @@
 import type { AppRole, HierarchyLevel } from "@/types/auth";
 
 export const ROLES_BY_LEVEL: Record<HierarchyLevel, AppRole[]> = {
-  archdiocese: ["super_admin", "archdiocese_admin"],
+  archdiocese: ["super_admin", "archdiocese_admin", "archdiocese_data_entry"],
   vicariate: ["vicariate_head", "vicariate_staff"],
   deanery: ["deanery_head", "deanery_staff"],
   parish: ["parish_head", "parish_data_entry"],
 };
 
 export const ADMIN_ROLES: AppRole[] = ["super_admin", "archdiocese_admin"];
+
+/** Roles that may proxy-enter data on behalf of descendant parishes. */
+export const PROXY_ENTRY_ROLES: AppRole[] = [
+  "super_admin",
+  "archdiocese_admin",
+  "archdiocese_data_entry",
+];
 
 export const SELF_REGISTERABLE_LEVELS: Exclude<HierarchyLevel, "archdiocese">[] = [
   "vicariate",
@@ -38,6 +45,7 @@ export const LEVEL_LABELS: Record<HierarchyLevel, string> = {
 export const ROLE_LABELS: Record<AppRole, string> = {
   super_admin: "Super Admin",
   archdiocese_admin: "Archdiocese Admin",
+  archdiocese_data_entry: "Archdiocese Data Entry",
   vicariate_head: "Vicariate Head",
   vicariate_staff: "Vicariate Staff",
   deanery_head: "Deanery Head",
@@ -69,6 +77,7 @@ export function levelForRole(role: AppRole): HierarchyLevel {
 export const DASHBOARD_HOME_BY_ROLE: Record<AppRole, string> = {
   super_admin: "/dashboard/archdiocese",
   archdiocese_admin: "/dashboard/archdiocese",
+  archdiocese_data_entry: "/dashboard/archdiocese",
   vicariate_head: "/dashboard/vicariate",
   vicariate_staff: "/dashboard/vicariate",
   deanery_head: "/dashboard/deanery",

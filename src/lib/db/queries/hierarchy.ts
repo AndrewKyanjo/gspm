@@ -23,9 +23,6 @@ export type HierarchyMaps = {
 };
 
 type HierarchyColumn = "archdioceseId" | "vicariateId" | "deaneryId" | "parishId";
-type HierarchyScopedQuery = {
-  eq(column: string, value: string): HierarchyScopedQuery;
-};
 
 const COLUMN_BY_SCOPE_KEY: Record<HierarchyColumn, string> = {
   archdioceseId: "archdiocese_id",
@@ -34,19 +31,21 @@ const COLUMN_BY_SCOPE_KEY: Record<HierarchyColumn, string> = {
   parishId: "id",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyHierarchyScope(
-  query: HierarchyScopedQuery,
+  query: any,
   scope: HierarchyScope,
-  supportedColumns: HierarchyColumn[]
+  supportedColumns: HierarchyColumn[],
 ) {
-  return supportedColumns.reduce((currentQuery, scopeKey) => {
+  let currentQuery = query;
+  for (const scopeKey of supportedColumns) {
     const value = scope[scopeKey];
     if (!value) {
-      return currentQuery;
+      continue;
     }
-
-    return currentQuery.eq(COLUMN_BY_SCOPE_KEY[scopeKey], value);
-  }, query);
+    currentQuery = currentQuery.eq(COLUMN_BY_SCOPE_KEY[scopeKey], value);
+  }
+  return currentQuery;
 }
 
 export async function getHierarchyCollections(scope: HierarchyScope = {}): Promise<HierarchyCollections> {
