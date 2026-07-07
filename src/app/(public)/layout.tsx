@@ -1,53 +1,96 @@
-// app/layout.tsx (or app/public/layout.tsx for nested routes)
-
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import '../globals.css';
+// src/app/(public)/layout.tsx
+import type { Metadata } from "next";
+import Link from "next/link";
+import "../globals.css";
+import AuthLeftPanel from "@/components/auth/AuthLeftPanel";
 
 export const metadata: Metadata = {
-  title: 'Public Page',
-  description: 'A public page accessible to everyone.',
+  title: {
+    default: "GSPM Portal — Good Samaritans & Prisons Ministry",
+    template: "%s | GSPM Portal",
+  },
+  description:
+    "Serving the Good Samaritans and Prisons Ministry across the Kampala Archdiocese.",
 };
 
-export default function RootLayout({
+export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-blue-600">MyApp</h1>
-            <nav>
-              <ul className="flex space-x-4 text-gray-700">
-                <li><Link href="/" className="hover:text-blue-600">Home</Link></li>
-                <li><Link href="/about" className="hover:text-blue-600">About</Link></li>
-                <li><Link href="/contact" className="hover:text-blue-600">Contact</Link></li>
-              </ul>
-            </nav>
-          </div>
+    <div className="flex min-h-screen">
+      {/* Left panel — branded, same as auth pages */}
+      <AuthLeftPanel />
+
+      {/* Right side — public content */}
+      <div className="w-full lg:w-1/2 flex flex-col">
+        {/* Top nav bar */}
+        <header className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-container-lowest">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity"
+          >
+            <span
+              className="material-symbols-outlined text-2xl"
+              style={{ fontVariationSettings: '"FILL" 1' }}
+            >
+              church
+            </span>
+            <span className="font-semibold text-sm tracking-tight hidden sm:inline">
+              GSPM Portal
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link
+              href="/"
+              className="px-3 py-2 text-sm text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              href="/contact"
+              className="px-3 py-2 text-sm text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container transition-colors"
+            >
+              Contact
+            </Link>
+            <span className="mx-1 h-5 w-px bg-outline-variant hidden sm:block" />
+            <Link
+              href="/login"
+              className="px-3 py-2 text-sm font-medium text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="px-3 py-2 text-sm font-medium bg-primary text-on-primary rounded-lg hover:bg-primary-container hover:shadow-sm transition-all"
+            >
+              Request Access
+            </Link>
+          </nav>
         </header>
 
-        {/* Main content - this is where your page.tsx renders */}
-        <main className="min-h-screen">
+        {/* Page content */}
+        <main className="flex-1 flex items-center justify-center p-4 lg:p-12">
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="bg-gray-100 border-t border-gray-200">
-          <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-600">
-            <p>© {new Date().getFullYear()} MyApp. All rights reserved.</p>
-            <p className="mt-1">
-              <a href="/privacy" className="hover:underline">Privacy</a>
-              {' · '}
-              <a href="/terms" className="hover:underline">Terms</a>
+        <footer className="border-t border-outline-variant bg-surface-container-lowest px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-outline">
+            <p>
+              © {new Date().getFullYear()} Kampala Archdiocese GSPM. All rights
+              reserved.
             </p>
+            <div className="flex gap-4">
+              <Link href="/contact" className="hover:text-primary transition-colors">
+                Contact
+              </Link>
+            </div>
           </div>
         </footer>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }
