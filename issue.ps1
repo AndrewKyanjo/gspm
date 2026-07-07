@@ -1,0 +1,32 @@
+# Navigate to your repo first
+
+# Create the script
+@"
+gh issue create --title "feat(archdiocese): add shared types, Supabase wiring, and reusable query utilities" --body "This PR lays the integration foundation for multiple archdiocese features. It introduces shared TypeScript types, wires up Supabase client and server interactions, and provides reusable query utilities. These changes reduce duplication and ensure consistent data access patterns across the archdiocese module." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add shared layout shell with sidebar, topbar, and loading/error states" --body "This PR introduces the common archdiocese layout shell. It includes the sidebar navigation, topbar, and shared UI wrappers used across all archdiocese routes. Loading, error, and not-found boundaries are added to ensure a consistent user experience when navigating archdiocese pages." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): enforce archdiocese-specific auth guards and redirects" --body "This PR strengthens access control across archdiocese routes. It adds archdiocese-specific authentication guards, fixes permission checks, and implements role- and scope-based redirect logic. Users without the proper archdiocese access are redirected appropriately." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): implement executive dashboard with stats and activity feed" --body "This PR adds the archdiocese executive dashboard. It displays key archdiocese-wide statistics and a summary of recent reports. A dedicated query layer fetches only dashboard-related data, keeping the page lightweight and focused." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add reports hub, financial reports, and parish report drill-down" --body "This PR delivers the full reports feature for the archdiocese module. It includes a reports hub page, a financial reports section, and parish-level report listing with a detail drill-down. All report queries and server actions are included to support filtering and viewing at every level." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add document listing, upload, and storage bucket integration" --body "This PR sets up the documents section. It provides a listing page for existing documents, an upload page with a file upload action, and integration with the storage bucket. All document query logic is implemented to support listing and filtering." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add contributions listing, entry, and finance components" --body "This PR introduces the contributions feature. It includes a contributions listing page, a contribution entry page, and the necessary server actions and queries. A migration for the contributions table is also included, along with reusable finance-related components for the archdiocese module." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add media gallery with upload and storage integration" --body "This PR adds media management to the archdiocese area. It includes a media listing page, an upload page, and storage integration for media files. Gallery and list view components are provided, supported by a media-specific query layer." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add project listing, detail, and create/edit flows" --body "This PR implements archdiocese projects. It covers the projects list page, a project detail page, and the create and edit flows. All relevant project queries and server actions are included to enable full CRUD functionality." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add settings hub, system config, hierarchy, and audit logs" --body "This PR delivers the archdiocese settings section. It provides a settings hub, system-level configuration UI, hierarchy management, and an audit log viewer. Dedicated forms and server actions are included to persist settings changes securely." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add deanery listing and detail drill-down" --body "This PR adds deanery management to the archdiocese module. It includes a deaneries list page with filtering and a detail page showing deanery-level stats, parishes, and reports. All deanery-specific queries and server actions are included." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add vicariate listing and detail with sub-entity navigation" --body "This PR adds vicariate management to the archdiocese module. It includes a vicariates list page and a detail page with drill-down into deaneries and parishes within the vicariate. All vicariate-specific queries and server actions are included." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add parish directory and detail overview" --body "This PR adds parish management to the archdiocese module. It includes a paginated parishes list with search and filtering, and a parish detail page showing that parish's stats, reports, and financial summary. All parish-management queries and server actions are included." --label "feature,archdiocese"
+
+gh issue create --title "feat(archdiocese): add user management, approval workflows, and role assignments" --body "This PR implements user management for the archdiocese module. It includes a users list page, an approval-requests workflow with detail view, and a role-assignment section with per-user configuration. All user-management queries, approval actions, and assignment server actions are included." --label "feature,archdiocese"
+"@ | Out-File -Encoding utf8 create-archdiocese-issues.ps1
