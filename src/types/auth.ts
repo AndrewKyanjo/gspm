@@ -5,6 +5,7 @@
 export type AppRole =
   | "super_admin"
   | "archdiocese_admin"
+  | "archdiocese_data_entry"
   | "vicariate_head"
   | "vicariate_staff"
   | "deanery_head"
