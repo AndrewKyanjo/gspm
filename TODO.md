@@ -474,3 +474,584 @@ The brief listed these four in the order Timetable → Mobile → Staff Entry �
 - [ ] Is a dedicated `archdiocese_data_entry` role wanted, or should proxy entry simply be available to existing `archdiocese_admin`s (and, later, Vicariate/Deanery heads for their own sub-tree)?
 - [ ] Should feed posts eventually support targeting a specific Vicariate/Deanery/Parish, or should the feed always stay a blanket, archdiocese-wide broadcast?
 - [ ] For the email digest — daily digest, or immediate send per notification? Daily digest is recommended, to avoid inbox spam and to match "later... a push email" reading as a periodic nudge rather than a transactional email per event.
+
+---
+
+## 8. `.keep` File Inventory — Remaining Work by Directory
+
+> Auto-generated 2026-07-07 by scanning every `.keep` file in the repo. Each `.keep` marks a directory that exists as a structural placeholder but whose contents are either entirely missing or only partially built. This section inventories all 20 `.keep` files, what (if anything) already lives in each directory, what files remain to be added, and where each directory fits in the broader implementation sequence.
+
+### 8.1 Summary Grid
+
+| # | .keep location | Current state | Priority |
+|---|---|---|---|
+| 8.2 | `src/app/api/auth/` | Empty | Low — client-side Supabase SDK covers auth today |
+| 8.3 | `src/app/api/registrations/` | Empty | Low — Server Actions cover this today |
+| 8.4 | `src/app/api/reports/` | Empty | Medium — export/report-generation endpoints |
+| 8.5 | `src/components/auth/` | **Has 3 files** — .keep is stale | Remove .keep |
+| 8.6 | `src/components/forms/` | Empty | High — needed by Proxy Entry (§3) and Mobile (§2) |
+| 8.7 | `src/components/layout/` | **Has 1 file** — .keep is partially stale | Medium |
+| 8.8 | `src/components/tables/` | Empty | High — needed by Mobile Responsiveness (§2.5) |
+| 8.9 | `src/components/ui/` | **Has 3 files** — .keep is partially stale | Medium |
+| 8.10 | `src/features/auth/` | `.keep` + `actions.ts` (no types, no queries) | Medium |
+| 8.11 | `src/features/contributions/` | Empty | High — needed by Proxy Entry (§3) bulk grid |
+| 8.12 | `src/features/documents/` | Empty | High — needed by Proxy Entry (§3) bulk upload |
+| 8.13 | `src/features/hierarchy/` | Empty | Medium — some logic lives in `lib/db/queries/hierarchy.ts` |
+| 8.14 | `src/features/media/` | Empty | Medium |
+| 8.15 | `src/features/projects/` | Empty | High — needed by Proxy Entry (§3) bulk entry |
+| 8.16 | `src/features/registrations/` | `.keep` + `actions.ts` (no types, no queries) | Medium |
+| 8.17 | `src/features/reports/` | Empty | High — core to all four dashboard levels |
+| 8.18 | `src/features/users/` | Empty | Medium — several user pages already exist |
+| 8.19 | `src/lib/db/` | `.keep` + 3 files (deanery mutations, deanery queries, hierarchy queries) | High — most modules lack dedicated DB layer |
+| 8.20 | `…/vicariates/[vicariateId]/deaneries/` | Empty | High — route exists but page is missing |
+| 8.21 | `…/vicariates/[vicariateId]/parishes/` | Empty | High — route exists but page is missing |
+
+---
+
+### 8.2 `src/app/api/auth/.keep`
+
+**What's here now:** Nothing — the directory is empty except for the `.keep`.
+
+**What the codebase already does:** All authentication flows (login, signup, email verification, password reset, OAuth callback) are handled client-side via `@supabase/ssr` called from Server Components (`src/lib/supabase/server.ts`, `src/lib/supabase/middleware.ts`). The OAuth callback is the only API-adjacent route and lives at `src/app/auth/callback/route.ts`, not under `api/`.
+
+**What should eventually go here (low priority):**
+
+```
+src/app/api/auth/
+├── password-reset/route.ts       — server-side password reset request handler (POST)
+├── verify-email/route.ts         — server-side email verification webhook (POST)
+└── (no page.tsx — this is a pure API route directory)
+```
+
+**Decision to make:** If the project intends to stay fully client-side for auth (which is a valid choice — Supabase's client SDK covers all of this), these `.keep`-and-directory can be removed entirely. They were likely created as part of an initial scaffold that assumed REST endpoints for everything. Mark as **confirm-or-delete** before starting any new feature work.
+
+---
+
+### 8.3 `src/app/api/registrations/.keep`
+
+**What's here now:** Empty.
+
+**What the codebase already does:** Registration requests are handled entirely through Server Actions (`src/features/registrations/actions.ts`). The `RegistrationReviewForm.tsx` + approval flow at `/dashboard/archdiocese/users/approvals/` calls these actions directly — no REST endpoint exists and none is currently called.
+
+**What should eventually go here (low priority):**
+
+```
+src/app/api/registrations/
+└── route.ts                      — GET (list pending for external dashboard), POST (programmatic registration from external system)
+```
+
+**Decision:** Same as auth — confirm whether REST endpoints for registrations are actually planned or whether Server Actions cover all use-cases. The `.keep` can likely be removed.
+
+---
+
+### 8.4 `src/app/api/reports/.keep`
+
+**What's here now:** Empty.
+
+**What the codebase already does:** Reports are created/updated via Server Actions in `src/features/parish/reports/actions.ts` and `src/features/deanery/reports/actions.ts`. There is no export or external-consumption endpoint.
+
+**What should go here (medium priority — export/data-integration):**
+
+```
+src/app/api/reports/
+├── export/
+│   └── route.ts                  — GET/POST: generate and stream CSV/PDF of a report or report-set
+├── webhook/
+│   └── route.ts                  — POST: accept report data from external systems (e.g. a mobile app, SMS gateway)
+└── (no page.tsx)
+```
+
+**Decision:** Unlike auth/registrations, this one has a tangible use-case that Server Actions alone can't cover — generating downloadable files and accepting inbound data from external systems. Recommend building the `export/` route as part of, or immediately after, the Mobile Responsiveness pass (§2) since mobile users especially benefit from PDF/CSV exports. The webhook route can wait.
+
+---
+
+### 8.5 `src/components/auth/.keep`
+
+**What's here now:** Three files already exist:
+- `AuthLeftPanel.tsx` — decorative/informational left panel for auth pages
+- `LoginForm.tsx` — login form component
+- `SignUpForm.tsx` — sign-up form component
+
+**Verdict: The `.keep` file is stale.** This directory is already populated and in active use. The `.keep` should be **removed** — it was likely committed before these components were written and never cleaned up.
+
+**What's still missing (add to the directory, don't rely on the .keep):**
+
+- [ ] `ForgotPasswordForm.tsx` — currently the forgot-password page (`src/app/(auth)/forgot-password/page.tsx`) presumably inlines its form; extract it here for consistency with Login/SignUp.
+- [ ] `AuthGuard.tsx` — client-side wrapper that checks `useAuth()` before rendering children, redirects to `/login` if unauthenticated. (The codebase currently uses `requireAuth.ts` and `requireApprovedUser.ts` as server-side checks in layouts — a client guard complements these for SPA-like sub-page transitions.)
+
+---
+
+### 8.6 `src/components/forms/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — needed by §2 and §3):**
+
+```
+src/components/forms/
+├── FormWizard.tsx                — multi-step form container (progress bar, step nav, mobile-friendly)
+├── FormStep.tsx                  — single step wrapper (title, description, fields, back/next)
+├── ScopeSelector.tsx             — cascading Vicariate → Deanery → Parish picker (see §3.4)
+├── SourceChannelSelect.tsx       — dropdown of channels (whatsapp, facebook, phone_call, etc.) for proxy entry (§3.4)
+├── ResponsiveField.tsx           — form field wrapper that handles mobile input types, 44px tap targets (§2.6)
+├── BulkEntryGrid.tsx             — editable grid for proxy bulk data entry (§3.5)
+└── index.ts                      — barrel export
+```
+
+**Why this directory exists but is empty:** The component tree currently has form components scoped to individual dashboards — `src/components/dashboard/parish/forms/contribution-form.tsx`, `report-form.tsx`, `project-form.tsx`, etc. — and also at `src/components/dashboard/deanery/forms/`. Each of these is a standalone, full-page form. What this `components/forms/` directory is meant to hold are the *shared primitives* that those specific forms compose from. The TODO.md roadmap calls out exactly this extraction in §2.6 ("Extract a shared `FormWizard` / `FormStep` primitive") and §3.4–§3.5 (ScopeSelector, BulkEntryGrid).
+
+**Dependency order:** Build the primitives here first, then refactor the existing parish/deanery forms to use them. Don't build new forms (Tasks, Proxy Entry) on top of the existing one-off form pattern.
+
+---
+
+### 8.7 `src/components/layout/.keep`
+
+**What's here now:** One file exists:
+- `PlaceholderPage.tsx` — a generic "this page is under construction" placeholder used by the archdiocese shell's placeholder pages.
+
+**Verdict: The `.keep` is partially stale** (the directory is in use) but there are still layout components missing.
+
+**What should additionally go here:**
+
+```
+src/components/layout/
+├── PlaceholderPage.tsx           — (already exists)
+├── PageHeader.tsx                — consistent page title + description + optional action button
+├── ContentShell.tsx              — max-width + padding wrapper, used by every dashboard page
+├── EmptyState.tsx                — generic "no data yet" illustration + CTA (parish has its own, but archdiocese/deanery/vicariate don't)
+├── SplitPanelLayout.tsx          — master/detail two-column layout (used by deanery/parish detail pages at all four levels)
+└── TabLayout.tsx                 — tabbed content area (used by settings pages, report detail pages)
+```
+
+---
+
+### 8.8 `src/components/tables/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — needed by §2.5):**
+
+```
+src/components/tables/
+├── ResponsiveTable.tsx           — renders as <table> at md+ and stacked label:value cards on mobile (§2.5)
+├── DataTable.tsx                 — sortable columns, optional row selection, server-side or client-side mode
+├── TablePagination.tsx           — page controls (prev/next, page size selector)
+├── TableFilterBar.tsx            — search input + column filter dropdowns
+├── TableSkeleton.tsx             — loading placeholder mimicking table row shape
+└── index.ts                      — barrel export
+```
+
+**Why this directory exists but is empty:** A parish-scoped `SimpleTable` already exists at `src/components/dashboard/parish/tables/simple-table.tsx` and is used on several parish pages. The Archdiocese dashboard pages currently inline their own `<table>` markup in each page's JSX. This directory is meant to hold the *shared, responsive, reusable* table primitives that replace both the one-off inline tables and the parish-only SimpleTable with a single implementation. The TODO.md roadmap explicitly calls this out in §2.5.
+
+**Note:** `@tanstack/react-table` is an optional upgrade path (TODO.md §3.5) but is not needed for v1 — a well-built custom `<DataTable>` with `useMemo`-based sorting/filtering handles realistic row counts without the dependency.
+
+---
+
+### 8.9 `src/components/ui/.keep`
+
+**What's here now:** Three files already exist:
+- `badge.tsx` — status badge/chip component
+- `button.tsx` — button with variants (primary, secondary, outline, ghost, destructive)
+- `card.tsx` — card container component
+
+**Verdict: Partially stale `.keep`** — the directory is in use, but the UI kit is far from complete.
+
+**What should additionally go here:**
+
+```
+src/components/ui/
+├── badge.tsx                     — (exists)
+├── button.tsx                    — (exists)
+├── card.tsx                      — (exists)
+├── input.tsx                     — text input with error state, label, helper text
+├── select.tsx                    — styled <select> / combobox
+├── textarea.tsx                  — multi-line input with character count
+├── label.tsx                     — consistent form label
+├── dialog.tsx                    — modal dialog (used by confirmation prompts, detail panels)
+├── dropdown-menu.tsx             — popover menu (used by user menu, action menus)
+├── tabs.tsx                      — tab bar + tab panel (used by settings pages, report views)
+├── skeleton.tsx                  — loading skeleton (text, card, table-row presets)
+├── toast.tsx                     — toast notification (success/error/info, used by every Server Action)
+├── avatar.tsx                    — user avatar with fallback initials
+├── separator.tsx                 — horizontal/vertical divider
+├── tooltip.tsx                   — hover tooltip
+├── checkbox.tsx                  — styled checkbox + label
+└── index.ts                      — barrel export
+```
+
+**Design note:** These should continue the existing pattern in `button.tsx` — each component accepts a `variant` prop or uses `class-variance-authority` (or a simpler `cn()` + variant map) to produce consistent Tailwind class strings. Do not introduce a new dependency (Radix, Headless UI) for these unless the interaction complexity (focus traps in modals, typeahead in combobox) genuinely warrants it — the existing `button.tsx` pattern is sufficient for most of the list above.
+
+---
+
+### 8.10 `src/features/auth/.keep`
+
+**What's here now:** `.keep` + `actions.ts` (6.9 KB — login, signup, password reset, email verification, callback handling).
+
+**What's missing:**
+
+```
+src/features/auth/
+├── actions.ts                    — (exists)
+├── types.ts                      — AuthSession, LoginInput, SignUpInput, ResetPasswordInput,
+│                                   VerifyEmailInput, AuthError, AuthResult<T>
+└── queries.ts                    — getSession(), getCurrentUser(), getCurrentProfile(),
+│                                   isAuthenticated(), checkEmailVerified()
+```
+
+**Why this matters:** The existing `actions.ts` uses inline type definitions for its parameters and return types. Extracting `types.ts` lets the auth components (`LoginForm`, `SignUpForm`) import the same shapes and gives the registration feature (`src/features/registrations/`) a canonical place to reference the auth-related types it depends on. The `queries.ts` file wraps the Supabase session/profile reads so every dashboard layout and page doesn't call `createClient()` + `supabase.auth.getUser()` inline — there's already duplication starting to creep in across the four dashboard layouts.
+
+---
+
+### 8.11 `src/features/contributions/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — core to every dashboard level and Proxy Entry):**
+
+```
+src/features/contributions/
+├── types.ts                      — Contribution, ContributionInput, ContributionCategory,
+│                                   PaymentMethod, ContributionSummary, BulkContributionRow,
+│                                   BulkCreateResult
+├── queries.ts                    — getContributions(ctx, filters), getContributionById(id),
+│                                   getContributionsSummary(ctx, period), getContributionStats(ctx)
+├── actions.ts                    — createContribution(input), updateContribution(id, input),
+│                                   deleteContribution(id), bulkCreateContributions(records[])
+└── constants.ts                  — VALID_CATEGORIES, PAYMENT_METHODS, CURRENCY
+```
+
+**Current state note:** The parish-level contribution actions live in `src/features/parish/contributions/actions.ts` and belong to the parish feature module. A shared `src/features/contributions/` module should hold the *shared types, shared queries, and permission logic* that all four dashboard levels use, plus the bulk-creation actions (§3.5) that are specific to Proxy Entry at the Archdiocese level. The parish-specific actions can either stay in the parish feature module (importing shared types from here) or be folded in here — **decide which convention before writing code.**
+
+---
+
+### 8.12 `src/features/documents/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — needed by Proxy Entry §3):**
+
+```
+src/features/documents/
+├── types.ts                      — Document, DocumentCategory, DocumentUploadInput,
+│                                   BulkDocumentEntry, DocumentStatus, FileValidationResult
+├── queries.ts                    — getDocuments(ctx, filters), getDocumentById(id),
+│                                   getDocumentsByScope(scope), getDocumentStats(ctx)
+├── actions.ts                    — uploadDocument(input), bulkUploadDocuments(inputs[]),
+│                                   deleteDocument(id), updateDocumentMetadata(id, input)
+└── constants.ts                  — ALLOWED_FILE_TYPES, MAX_FILE_SIZE_MB, VALID_CATEGORIES
+```
+
+**Current state note:** Like contributions, the parish-level document logic is in `src/features/parish/documents/` (with `constants.ts`, `queries.ts`, `actions.ts` already in place). This shared module is needed for: (a) the Archdiocese-level document upload pages that already exist at `src/app/(dashboard)/dashboard/archdiocese/documents/upload/`, (b) the bulk document upload in Proxy Entry (§3.5, multiple files + per-file metadata), and (c) deanery/vicariate document views.
+
+---
+
+### 8.13 `src/features/hierarchy/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (medium priority):**
+
+```
+src/features/hierarchy/
+├── types.ts                      — HierarchyLevel, HierarchyNode, HierarchyCollection,
+│                                   OrgUnit (vicariate | deanery | parish), HierarchyMap,
+│                                   HierarchySearchResult
+├── queries.ts                    — getHierarchyTree(archdioceseId), getChildrenAtLevel(parentId, level),
+│                                   searchHierarchy(query, archdioceseId), getOrgUnitPath(id),
+│                                   getVicariateSummary(id), getDeanerySummary(id), getParishSummary(id)
+└── constants.ts                  — HIERARCHY_LEVELS, LEVEL_LABELS (mapping to role-labels in permissions/roles.ts)
+```
+
+**Current state note:** Some hierarchy query logic already lives in `src/lib/db/queries/hierarchy.ts` (`getHierarchyCollections`, `buildHierarchyMaps`, `getSubtreeStats`). The TODO.md §3.4 references these. The feature module here should provide the *React-Query-friendly wrappers and types* that components consume directly, delegating raw SQL/Kysely queries to `src/lib/db/queries/`. This is the same split already used by the deanery feature: `src/features/deanery/dashboard/queries.ts` calls into `src/lib/db/queries/deanery.ts`.
+
+---
+
+### 8.14 `src/features/media/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (medium priority):**
+
+```
+src/features/media/
+├── types.ts                      — MediaItem, MediaUploadInput, MediaCategory, MediaType,
+│                                   MediaFilter, MediaGalleryItem
+├── queries.ts                    — getMedia(ctx, filters), getMediaById(id),
+│                                   getMediaGallery(ctx, category), getMediaStats(ctx)
+├── actions.ts                    — uploadMedia(input), deleteMedia(id),
+│                                   updateMediaMetadata(id, input)
+└── constants.ts                  — ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES,
+│                                   MAX_UPLOAD_SIZE_MB, THUMBNAIL_DIMENSIONS
+```
+
+**Current state note:** Media logic currently lives in `src/features/parish/media/` and `src/features/deanery/media/` (each with `actions.ts`, `queries.ts`, `constants.ts`). A shared module is needed for the Archdiocese and Vicariate media upload pages that already exist but presumably inline their logic or import from parish/deanery modules — neither of which is the right home for Archdiocese-scoped media. **Check before building:** do the existing Archdiocese media pages currently import from `features/parish/media/`? If so, this module is the fix for that import-path smell.
+
+---
+
+### 8.15 `src/features/projects/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — needed by Proxy Entry §3):**
+
+```
+src/features/projects/
+├── types.ts                      — Project, ProjectInput, ProjectStatus, ProjectCategory,
+│                                   BulkProjectRow, BulkCreateResult, ProjectSummary
+├── queries.ts                    — getProjects(ctx, filters), getProjectById(id),
+│                                   getProjectsByScope(scope), getProjectStats(ctx),
+│                                   getUpcomingProjects(ctx, days)
+├── actions.ts                    — createProject(input), updateProject(id, input),
+│                                   deleteProject(id), bulkCreateProjects(records[])
+└── constants.ts                  — PROJECT_STATUSES, PROJECT_CATEGORIES, VALID_BUDGET_RANGE
+```
+
+**Current state note:** Parish project logic is in `src/features/parish/projects/` (`actions.ts`, `queries.ts`, `constants.ts`). As with contributions and documents, this shared module serves the Archdiocese/Vicariate/Deanery project views and the bulk-creation Proxy Entry action (§3.5).
+
+---
+
+### 8.16 `src/features/registrations/.keep`
+
+**What's here now:** `.keep` + `actions.ts` (1.9 KB — `adminApproveRegistration`, `adminRejectRegistration`).
+
+**What's missing:**
+
+```
+src/features/registrations/
+├── actions.ts                    — (exists)
+├── types.ts                      — RegistrationRequest, RegistrationStatus, ApprovalDecision,
+│                                   RegistrationWithProfile, PendingRegistrationsCount
+└── queries.ts                    — getRegistrationRequests(filters), getPendingRegistrations(),
+│                                   getRegistrationById(id), getApprovalHistory(requestId),
+│                                   getRegistrationStats()
+```
+
+**Why this matters:** The `RegistrationReviewForm.tsx` and `RegistrationTable.tsx` components currently import from `src/features/registrations/actions.ts` but any types they use are either inline or imported from elsewhere. Extracting `types.ts` gives the registration approval UI a single source of truth. The `queries.ts` wraps the Supabase reads with proper typing and permission checks — the approval pages at `/dashboard/archdiocese/users/approvals/` are currently either doing inline queries in their Server Components or calling a non-dedicated query function.
+
+---
+
+### 8.17 `src/features/reports/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (high priority — core to every dashboard):**
+
+```
+src/features/reports/
+├── types.ts                      — Report, ReportInput, ReportStatus, ReportingPeriod,
+│                                   ReportMetrics (beneficiaries, households, cases, donations),
+│                                   ReportReviewInput, ReportSummary
+├── queries.ts                    — getReports(ctx, filters), getReportById(id),
+│                                   getReportsByScope(ctx), getReportStats(ctx),
+│                                   getReportsByPeriod(periodId), getOverdueReports(ctx),
+│                                   getReportComparison(periodA, periodB)
+├── actions.ts                    — createReport(input), updateReport(id, input),
+│                                   submitReport(id), reviewReport(id, decision, notes),
+│                                   reopenReport(id)
+└── constants.ts                  — REPORT_STATUSES, REPORTING_PERIODS, METRIC_FIELDS
+```
+
+**Current state note:** Parish report logic is in `src/features/parish/reports/` and deanery report logic in `src/features/deanery/reports/`. The shared module is needed for: (a) the Archdiocese-level report overview pages that already exist (`/dashboard/archdiocese/reports/parish-reports/`, `/dashboard/archdiocese/reports/financial/`), (b) the Vicariate report views, and (c) the report-overdue notification logic in the Feed & Notifications feature (§4).
+
+---
+
+### 8.18 `src/features/users/.keep`
+
+**What's here now:** Empty.
+
+**What should go here (medium priority):**
+
+```
+src/features/users/
+├── types.ts                      — User, Profile, AppRole, UserAssignment, UserWithAssignments,
+│                                   UserFilters, UserSearchResult
+├── queries.ts                    — getUsers(ctx, filters), getUserById(id),
+│                                   getUsersByScope(ctx), searchUsers(query, ctx),
+│                                   getUserAssignments(userId), getPendingApprovalsCount(),
+│                                   getUserStats(ctx)
+├── actions.ts                    — updateProfile(id, input), assignUserToScope(input),
+│                                   revokeAssignment(assignmentId), setPrimaryAssignment(id),
+│                                   deactivateUser(id), reactivateUser(id)
+└── constants.ts                  — (or import role labels from lib/permissions/roles.ts)
+```
+
+**Current state note:** The Archdiocese users pages (`/dashboard/archdiocese/users/`, `/approvals/`, `/assignments/`) are fully built and presumably query Supabase directly in their Server Components. No shared `features/users/` module exists — types and query logic are likely duplicated across the pages. This module consolidates them.
+
+---
+
+### 8.19 `src/lib/db/.keep`
+
+**What's here now:** `.keep` + three files:
+- `mutations/deanery.ts` — deanery-level write operations
+- `queries/deanery.ts` — deanery-level read operations
+- `queries/hierarchy.ts` — `getHierarchyCollections()`, `buildHierarchyMaps()`, `getSubtreeStats()`
+
+**What should additionally go here (high priority — the DB layer is the foundation everything else sits on):**
+
+```
+src/lib/db/
+├── mutations/
+│   ├── deanery.ts                — (exists)
+│   ├── archdiocese.ts            — create/update/delete for archdiocese-scoped operations
+│   ├── parish.ts                 — create/update/delete for parish-scoped operations
+│   ├── vicariate.ts              — create/update/delete for vicariate-scoped operations
+│   ├── registrations.ts          — approve/reject registration, create user+profile in transaction
+│   └── index.ts
+├── queries/
+│   ├── deanery.ts                — (exists)
+│   ├── hierarchy.ts              — (exists)
+│   ├── archdiocese.ts            — archdiocese-level aggregate stats, overview data
+│   ├── parish.ts                 — parish-level detail queries
+│   ├── vicariate.ts              — vicariate-level aggregate queries
+│   ├── registrations.ts          — pending-registration queries
+│   ├── users.ts                  — user/profile CRUD queries
+│   └── index.ts
+└── .keep                         — remove once the directory is meaningfully populated
+```
+
+**Why the gap matters:** The deanery module is the only one with a proper DB layer. The Archdiocese executive dashboard's 10 stat cards are currently served by `src/features/archdiocese/queries.ts` calling Supabase directly — no intermediate DB abstraction. Every feature above (§8.10–§8.18) needs its own DB queries and mutations to avoid raw Supabase calls scattered across 80+ page files. The pattern is already established by `db/queries/deanery.ts` and `db/mutations/deanery.ts` — it just needs to be replicated for the remaining modules.
+
+**Build order within this directory:** Archdiocese first (the executive dashboard is already the most query-heavy surface), then parish (most write-heavy), then vicariate (currently the least built-out dashboard), then registrations and users.
+
+---
+
+### 8.20 `src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/deaneries/.keep`
+
+**What's here now:** The parent route `[vicariateId]/page.tsx` exists (vicariate detail page), but the `deaneries/` sub-route is a `.keep`-only placeholder.
+
+**What needs to go here:**
+
+```
+src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/deaneries/
+├── page.tsx                      — list all deaneries under this vicariate (table with name, location,
+│                                   deanery head, parish count, active projects count)
+└── [deaneryId]/page.tsx          — deanery detail page: stats cards, parish list, recent reports,
+│                                   quick actions (view reports, view parishes)
+```
+
+**Reference:** The Archdiocese already has `dashboard/archdiocese/deaneries/[deaneryId]/page.tsx` — the vicariate-context version should show the same data scoped to "this deanery, under this vicariate" (the vicariate breadcrumb context is the only difference). Reuse the same query functions; just pass a different parent scope filter.
+
+---
+
+### 8.21 `src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/parishes/.keep`
+
+**What's here now:** Same pattern — the parent route exists, the sub-route is a `.keep` placeholder.
+
+**What needs to go here:**
+
+```
+src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/parishes/
+├── page.tsx                      — list all parishes under this vicariate (searchable table:
+│                                   name, deanery, priest, status, last report date, contribution total)
+└── [parishId]/page.tsx           — parish detail page: full profile, recent reports,
+│                                   contribution history, active projects, documents
+```
+
+**Reference:** The Archdiocese already has `dashboard/archdiocese/parishes/[parishId]/page.tsx` — reuse the same pattern, scoped within the vicariate context.
+
+---
+
+### 8.22 Cross-Cutting Gap: Vicariate Dashboard
+
+Not tracked by a `.keep` file because no directory exists at all, but discovered during this scan: the Vicariate dashboard has **no `layout.tsx`**, **no `dashboard/` subdirectory**, and **no `search/` page**, unlike its Deanery and Parish counterparts.
+
+| Missing piece | Deanery has it? | Parish has it? | Vicariate has it? |
+|---|---|---|---|
+| `layout.tsx` | ✓ | ✓ | **✗** — reuses parent layout, no vicariate-specific sidebar/shell |
+| `dashboard/` home page | ✓ (`dashboard/page.tsx`) | N/A (uses `page.tsx`) | **✗** — `page.tsx` is a 64-byte stub |
+| `search/` page | ✓ | ✓ | **✗** |
+| Sidebar config | ✓ (in `deanery-sidebar.tsx`) | ✓ (in `parish-sidebar.tsx`) | **✗** — no vicariate sidebar component exists |
+| Component directory | ✓ (`components/dashboard/deanery/`) | ✓ (`components/dashboard/parish/`) | **✗** — no `components/dashboard/vicariate/` |
+| Feature module | ✓ (`features/deanery/`) | ✓ (`features/parish/`) | **✗** — no `features/vicariate/` |
+
+**What needs to be built for Vicariate (high priority — it's a full dashboard shell that doesn't exist yet):**
+
+```
+src/components/dashboard/vicariate/
+├── navigation/
+│   └── vicariate-sidebar.tsx     — sidebar config: Dashboard, Deaneries, Parishes, Reports,
+│                                   Contributions, Documents, Media, Search, Settings
+├── shared/
+│   ├── vicariate-shell.tsx       — vicariate dashboard layout wrapper
+│   └── vicariate-placeholder-page.tsx
+├── forms/                        — vicariate-specific forms (if any; may just reuse parish/deanery forms)
+└── charts/                       — vicariate-level aggregate charts
+
+src/features/vicariate/
+├── types.ts                      — VicariateStats, VicariateSummary, VicariateFilters
+├── dashboard/
+│   └── queries.ts                — getVicariateDashboardData(ctx): stats, recent activity, charts
+└── (extend as needed)
+
+src/app/(dashboard)/dashboard/vicariate/
+├── layout.tsx                    — wrap with vicariate-shell
+├── dashboard/
+│   └── page.tsx                  — home dashboard with stat cards + recent activity (match deanery pattern)
+├── search/
+│   └── page.tsx                  — cross-entity search scoped to this vicariate's deaneries + parishes
+└── (the rest already exist: contributions, deaneries, documents, media, parishes, projects, reports, settings)
+```
+
+**Decision:** The TODO.md introduction calls this out: "Note that the Vicariate dashboard is currently a shell relative to Deanery/Parish. The Vicariate-level Tasks and Feed pages proposed below will be some of the first real functionality in that dashboard." Building the full Vicariate shell (layout + sidebar + dashboard home + search) is a prerequisite for landing the Tasks and Feed features at the Vicariate level. Either build it as a standalone pass before starting §1–§4, or build it incrementally as each feature touches the Vicariate level.
+
+---
+
+### 8.23 .keep Cleanup Checklist
+
+Mark these off as each directory is filled:
+
+- [ ] **Remove stale `.keep`s** (directory already has real files — the `.keep` is just noise):
+  - [ ] `src/components/auth/.keep` (3 component files already present)
+  - [ ] `src/components/layout/.keep` (1 component file already present)
+  - [ ] `src/components/ui/.keep` (3 component files already present)
+
+- [ ] **Build out empty feature modules** (`.keep` is the only file; needs `types.ts` + `queries.ts` + `actions.ts` + possibly `constants.ts`):
+  - [ ] `src/features/contributions/.keep`
+  - [ ] `src/features/documents/.keep`
+  - [ ] `src/features/hierarchy/.keep`
+  - [ ] `src/features/media/.keep`
+  - [ ] `src/features/projects/.keep`
+  - [ ] `src/features/reports/.keep`
+  - [ ] `src/features/users/.keep`
+
+- [ ] **Complete partial feature modules** (has `actions.ts` but missing `types.ts` and `queries.ts`):
+  - [ ] `src/features/auth/.keep`
+  - [ ] `src/features/registrations/.keep`
+
+- [ ] **Build out empty component directories**:
+  - [ ] `src/components/forms/.keep`
+  - [ ] `src/components/tables/.keep`
+
+- [ ] **Build out the DB layer** (replicate deanery pattern for remaining modules):
+  - [ ] `src/lib/db/.keep` — add `mutations/{archdiocese,parish,vicariate,registrations}` and `queries/{archdiocese,parish,vicariate,registrations,users}`
+
+- [ ] **Build missing route pages** (`.keep` holding directory open for a page that doesn't exist yet):
+  - [ ] `src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/deaneries/.keep` → build `page.tsx` + `[deaneryId]/page.tsx`
+  - [ ] `src/app/(dashboard)/dashboard/archdiocese/vicariates/[vicariateId]/parishes/.keep` → build `page.tsx` + `[parishId]/page.tsx`
+
+- [ ] **Decide fate of API route `.keep`s** (empty directories that may not be needed at all):
+  - [ ] `src/app/api/auth/.keep` — confirm: are REST auth endpoints planned, or does Supabase SDK cover everything?
+  - [ ] `src/app/api/registrations/.keep` — confirm: are REST registration endpoints planned, or do Server Actions cover everything?
+  - [ ] `src/app/api/reports/.keep` — build the `export/` route; defer the `webhook/` route until needed
+
+- [ ] **Build the missing Vicariate dashboard shell** (no `.keep` exists because no directory exists):
+  - [ ] Create `src/components/dashboard/vicariate/` with sidebar, shell, and placeholder components
+  - [ ] Create `src/features/vicariate/` with types and dashboard queries
+  - [ ] Create `src/app/(dashboard)/dashboard/vicariate/layout.tsx`
+  - [ ] Create `src/app/(dashboard)/dashboard/vicariate/dashboard/page.tsx`
+  - [ ] Create `src/app/(dashboard)/dashboard/vicariate/search/page.tsx`
+
+---
+
+### 8.24 Recommended Build Sequence for .keep Resolution
+
+This sequence respects the dependency chain laid out in the main roadmap (§6) while clearing the structural scaffolding work that blocks it:
+
+1. **Remove stale `.keep`s** (§8.5, §8.7, §8.9) — 5 minutes, just delete the files.
+2. **Build shared UI primitives** (`components/forms/`, `components/tables/`) — these are the foundation the roadmap says to build first (§2, mobile responsiveness).
+3. **Build the DB layer** (`lib/db/`) — archdiocese and parish queries/mutations first, then vicariate, registrations, users. Everything in steps 4–7 calls into this.
+4. **Build shared feature modules** (`features/contributions/`, `features/reports/`, `features/projects/`, `features/documents/`, `features/media/`, `features/hierarchy/`, `features/users/`) — types and queries at minimum; actions can follow per-feature.
+5. **Complete partial feature modules** (`features/auth/`, `features/registrations/`) — types + queries.
+6. **Build the Vicariate dashboard shell** (§8.22) — unblocks Vicariate-level Tasks and Feed pages.
+7. **Build missing route pages** (§8.20, §8.21) — vicariate deaneries/parishes sub-routes.
+8. **Decide API route `.keep`s** (§8.2–§8.4) — remove or build based on the decision; the `api/reports/export/` route is the only one with a clear near-term use-case.
