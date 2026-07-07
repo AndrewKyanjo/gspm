@@ -1,1 +1,5 @@
-export { default } from "@/components/layout/PlaceholderPage";
+import { redirect } from "next/navigation";
+
+export default async function ArchdioceseIndexPage() {
+  redirect("/dashboard/archdiocese/dashboard");
+}
