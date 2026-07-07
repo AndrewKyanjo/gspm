@@ -30,7 +30,7 @@ function statusVariant(status: string | null) {
 }
 
 export default async function ArchdioceseParishesPage({ searchParams }: ArchdioceseParishesPageProps) {
-  const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin", "archdiocese_data_entry"] });
   if (!context.archdioceseId) {
     return null;
   }

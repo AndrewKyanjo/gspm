@@ -15,7 +15,7 @@ const currencyFormatter = new Intl.NumberFormat("en-UG", {
 });
 
 export default async function ArchdioceseContributionsPage() {
-  const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin", "archdiocese_data_entry"] });
   if (!context.archdioceseId) {
     return null;
   }
