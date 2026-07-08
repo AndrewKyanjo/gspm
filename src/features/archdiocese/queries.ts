@@ -2,10 +2,13 @@ import { buildHierarchyMaps, getHierarchyCollections } from "@/lib/db/queries/hi
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { HierarchyLevel } from "@/types/auth";
 import type {
+  ArchdioceseAssignmentDetail,
+  ArchdioceseAuditLogEntry,
   ArchdioceseContext,
   ArchdioceseContributionSummary,
   ArchdioceseDeaneryOverview,
   ArchdioceseExecutiveStats,
+  ArchdioceseFinancialSummary,
   ArchdioceseParishOverview,
   ArchdiocesePendingRequest,
   ArchdioceseProjectOverview,
@@ -15,6 +18,11 @@ import type {
   ArchdioceseSettingsSnapshot,
   ArchdioceseUserOverview,
   ArchdioceseVicariateOverview,
+  DeaneryDetail,
+  ParishDetail,
+  ProjectDetail,
+  ReportDetail,
+  VicariateDetail,
 } from "./types";
 
 function unique(values: Array<string | null | undefined>) {
@@ -298,6 +306,8 @@ export async function getArchdioceseParishOverviews(
     name: parish.name,
     code: parish.code ?? null,
     status: parish.status ?? null,
+    vicariateId: parish.vicariate_id,
+    deaneryId: parish.deanery_id,
     vicariateName: maps.vicariatesById.get(parish.vicariate_id)?.name ?? null,
     deaneryName: maps.deaneriesById.get(parish.deanery_id)?.name ?? null,
     latestReportStatus: latestReportStatusByParish.get(parish.id) ?? null,
@@ -525,5 +535,483 @@ export async function getArchdioceseSettingsSnapshot(
     totalDeaneries: hierarchy.collections.deaneries.length,
     totalParishes: hierarchy.collections.parishes.length,
     hierarchyDepth: 4,
+  };
+}
+
+// ─── Detail queries ───────────────────────────────────────────
+
+export async function getVicariateDetail(
+  archdioceseId: string,
+  vicariateId: string
+): Promise<VicariateDetail | null> {
+  const { collections, maps } = await getArchdioceseHierarchy(archdioceseId);
+  const vicariate = maps.vicariatesById.get(vicariateId);
+  if (!vicariate) return null;
+
+  const deaneries = collections.deaneries
+    .filter((d) => d.vicariate_id === vicariateId)
+    .map((d) => ({
+      id: d.id,
+      name: d.name,
+      parishCount: collections.parishes.filter((p) => p.deanery_id === d.id).length,
+      status: d.status ?? null,
+    }));
+
+  const parishes = collections.parishes
+    .filter((p) => p.vicariate_id === vicariateId)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      deaneryName: maps.deaneriesById.get(p.deanery_id)?.name ?? null,
+      status: p.status ?? null,
+    }));
+
+  return {
+    id: vicariate.id,
+    name: vicariate.name,
+    code: vicariate.code ?? null,
+    status: vicariate.status ?? null,
+    deaneries,
+    parishes,
+    totalDeaneries: deaneries.length,
+    totalParishes: parishes.length,
+  };
+}
+
+export async function getDeaneryDetail(
+  archdioceseId: string,
+  deaneryId: string
+): Promise<DeaneryDetail | null> {
+  const supabase = createAdminClient();
+  const [{ collections, maps }, reportsResult, projectsResult, contributionsResult] =
+    await Promise.all([
+      getArchdioceseHierarchy(archdioceseId),
+      supabase
+        .from("parish_reports")
+        .select("id, parish_id, status, updated_at")
+        .eq("deanery_id", deaneryId)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("parish_projects")
+        .select("id, parish_id, title, status")
+        .eq("deanery_id", deaneryId)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("parish_contributions")
+        .select("id", { count: "exact", head: true })
+        .eq("deanery_id", deaneryId),
+    ]);
+
+  const deanery = maps.deaneriesById.get(deaneryId);
+  if (!deanery) return null;
+
+  const vicariate = maps.vicariatesById.get(deanery.vicariate_id);
+  const parishes = collections.parishes
+    .filter((p) => p.deanery_id === deaneryId)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      code: p.code ?? null,
+      status: p.status ?? null,
+    }));
+
+  return {
+    id: deanery.id,
+    name: deanery.name,
+    code: deanery.code ?? null,
+    status: deanery.status ?? null,
+    vicariateId: deanery.vicariate_id,
+    vicariateName: vicariate?.name ?? null,
+    archdioceseName: vicariate
+      ? maps.archdiocesesById.get(vicariate.archdiocese_id)?.name ?? null
+      : null,
+    parishes,
+    recentReports: (reportsResult.data ?? []).map((r) => ({
+      id: r.id,
+      parishName: maps.parishesById.get(r.parish_id)?.name ?? null,
+      status: r.status ?? null,
+      updatedAt: r.updated_at ?? null,
+    })),
+    recentProjects: (projectsResult.data ?? []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      parishName: maps.parishesById.get(p.parish_id)?.name ?? null,
+      status: p.status ?? null,
+    })),
+    totalParishes: parishes.length,
+    totalReports: reportsResult.data?.length ?? 0,
+    totalProjects: projectsResult.data?.length ?? 0,
+    totalContributions: contributionsResult.count ?? 0,
+  };
+}
+
+export async function getParishDetail(
+  archdioceseId: string,
+  parishId: string
+): Promise<ParishDetail | null> {
+  const supabase = createAdminClient();
+  const [{ collections, maps }, reportsResult, projectsResult, contributionsResult] =
+    await Promise.all([
+      getArchdioceseHierarchy(archdioceseId),
+      supabase
+        .from("parish_reports")
+        .select("id, parish_id, status, summary, updated_at")
+        .eq("parish_id", parishId)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("parish_projects")
+        .select("id, title, status, budget_amount, amount_raised, updated_at")
+        .eq("parish_id", parishId)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("parish_contributions")
+        .select("id, contributor_name, contribution_type, amount, currency, contributed_on")
+        .eq("parish_id", parishId)
+        .order("contributed_on", { ascending: false })
+        .limit(5),
+    ]);
+
+  const parish = maps.parishesById.get(parishId);
+  if (!parish) return null;
+
+  const deanery = maps.deaneriesById.get(parish.deanery_id);
+  const vicariate = maps.vicariatesById.get(parish.vicariate_id);
+
+  return {
+    id: parish.id,
+    name: parish.name,
+    code: parish.code ?? null,
+    status: parish.status ?? null,
+    vicariateId: parish.vicariate_id,
+    vicariateName: vicariate?.name ?? null,
+    deaneryId: parish.deanery_id,
+    deaneryName: deanery?.name ?? null,
+    archdioceseName: vicariate
+      ? maps.archdiocesesById.get(vicariate.archdiocese_id)?.name ?? null
+      : null,
+    recentReports: (reportsResult.data ?? []).map((r) => ({
+      id: r.id,
+      parishId: r.parish_id,
+      parishName: parish.name,
+      deaneryName: deanery?.name ?? null,
+      vicariateName: vicariate?.name ?? null,
+      status: r.status ?? null,
+      summary: r.summary ?? null,
+      submittedAt: null,
+      updatedAt: r.updated_at ?? null,
+    })),
+    recentProjects: (projectsResult.data ?? []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      status: p.status ?? null,
+      budgetAmount: p.budget_amount == null ? null : Number(p.budget_amount),
+      amountRaised: p.amount_raised == null ? null : Number(p.amount_raised),
+      updatedAt: p.updated_at ?? null,
+    })),
+    recentContributions: (contributionsResult.data ?? []).map((c) => ({
+      id: c.id,
+      contributorName: c.contributor_name,
+      contributionType: c.contribution_type,
+      amount: parseNumeric(c.amount),
+      currency: c.currency,
+      contributedOn: c.contributed_on,
+    })),
+    totalReports: reportsResult.data?.length ?? 0,
+    totalProjects: projectsResult.data?.length ?? 0,
+    totalContributions: contributionsResult.data?.length ?? 0,
+    contributionTotal: sumNumericField(
+      (contributionsResult.data ?? []) as Array<Record<string, unknown>>,
+      "amount"
+    ),
+    projectBudgetTotal: (projectsResult.data ?? []).reduce(
+      (sum, p) => sum + (p.budget_amount == null ? 0 : Number(p.budget_amount)),
+      0
+    ),
+  };
+}
+
+export async function getProjectDetail(
+  archdioceseId: string,
+  projectId: string
+): Promise<ProjectDetail | null> {
+  const supabase = createAdminClient();
+  const [{ maps }, projectResult] = await Promise.all([
+    getArchdioceseHierarchy(archdioceseId),
+    supabase
+      .from("parish_projects")
+      .select("*")
+      .eq("id", projectId)
+      .maybeSingle(),
+  ]);
+
+  if (!projectResult.data) return null;
+  const project = projectResult.data;
+  const parish = project.parish_id ? maps.parishesById.get(project.parish_id) ?? null : null;
+  const deanery = parish ? maps.deaneriesById.get(parish.deanery_id) ?? null : null;
+  const vicariate = parish ? maps.vicariatesById.get(parish.vicariate_id) ?? null : null;
+
+  return {
+    id: project.id,
+    title: project.title,
+    status: project.status ?? null,
+    category: project.category ?? null,
+    location: project.location ?? null,
+    description: project.description ?? null,
+    startDate: project.start_date ?? null,
+    targetEndDate: project.target_end_date ?? null,
+    budgetAmount: project.budget_amount == null ? null : Number(project.budget_amount),
+    amountRaised: project.amount_raised == null ? null : Number(project.amount_raised),
+    parishName: parish?.name ?? null,
+    deaneryName: deanery?.name ?? null,
+    vicariateName: vicariate?.name ?? null,
+    archdioceseName: vicariate
+      ? maps.archdiocesesById.get(vicariate.archdiocese_id)?.name ?? null
+      : null,
+    createdBy: project.created_by ?? null,
+    createdAt: project.created_at ?? null,
+    updatedAt: project.updated_at ?? null,
+  };
+}
+
+export async function getReportDetail(
+  archdioceseId: string,
+  reportId: string
+): Promise<ReportDetail | null> {
+  const supabase = createAdminClient();
+  const [{ maps }, reportResult] = await Promise.all([
+    getArchdioceseHierarchy(archdioceseId),
+    supabase.from("parish_reports").select("*").eq("id", reportId).maybeSingle(),
+  ]);
+
+  if (!reportResult.data) return null;
+  const report = reportResult.data;
+  const parish = report.parish_id ? maps.parishesById.get(report.parish_id) ?? null : null;
+  const deanery = parish ? maps.deaneriesById.get(parish.deanery_id) ?? null : null;
+  const vicariate = parish ? maps.vicariatesById.get(parish.vicariate_id) ?? null : null;
+
+  return {
+    id: report.id,
+    parishName: parish?.name ?? null,
+    deaneryName: deanery?.name ?? null,
+    vicariateName: vicariate?.name ?? null,
+    status: report.status ?? null,
+    summary: report.summary ?? null,
+    totalHouseholds: report.total_households == null ? null : Number(report.total_households),
+    totalBeneficiaries:
+      report.total_beneficiaries == null ? null : Number(report.total_beneficiaries),
+    submittedAt: report.submitted_at ?? null,
+    approvedAt: report.approved_at ?? null,
+    approvedBy: report.approved_by ?? null,
+    updatedAt: report.updated_at ?? null,
+    reportingPeriodYear: report.reporting_period_year ?? null,
+    reportingPeriodMonth: report.reporting_period_month ?? null,
+    narrative: report.narrative ?? null,
+    challenges: report.challenges ?? null,
+    recommendations: report.recommendations ?? null,
+  };
+}
+
+export async function getArchdioceseFinancialSummary(
+  archdioceseId: string
+): Promise<ArchdioceseFinancialSummary> {
+  const supabase = createAdminClient();
+  const [{ maps }, contributionsResult] = await Promise.all([
+    getArchdioceseHierarchy(archdioceseId),
+    supabase
+      .from("parish_contributions")
+      .select("id, parish_id, vicariate_id, deanery_id, contributor_name, contribution_type, amount, currency, contributed_on")
+      .eq("archdiocese_id", archdioceseId)
+      .order("contributed_on", { ascending: false }),
+  ]);
+
+  const rows = contributionsResult.data ?? [];
+
+  // By vicariate
+  const byVicariateMap = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.vicariate_id) continue;
+    byVicariateMap.set(row.vicariate_id, (byVicariateMap.get(row.vicariate_id) ?? 0) + parseNumeric(row.amount));
+  }
+
+  // By deanery
+  const byDeaneryMap = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.deanery_id) continue;
+    byDeaneryMap.set(row.deanery_id, (byDeaneryMap.get(row.deanery_id) ?? 0) + parseNumeric(row.amount));
+  }
+
+  // By month
+  const byMonthMap = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.contributed_on) continue;
+    const d = new Date(row.contributed_on);
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    byMonthMap.set(key, (byMonthMap.get(key) ?? 0) + parseNumeric(row.amount));
+  }
+
+  // By type
+  const byTypeMap = new Map<string, number>();
+  for (const row of rows) {
+    const type = row.contribution_type || "Uncategorized";
+    byTypeMap.set(type, (byTypeMap.get(type) ?? 0) + parseNumeric(row.amount));
+  }
+
+  return {
+    totalAmount: sumNumericField(rows as Array<Record<string, unknown>>, "amount"),
+    byVicariate: [...byVicariateMap.entries()]
+      .map(([id, amount]) => ({ name: maps.vicariatesById.get(id)?.name ?? "Unknown", amount }))
+      .sort((a, b) => b.amount - a.amount),
+    byDeanery: [...byDeaneryMap.entries()]
+      .map(([id, amount]) => ({ name: maps.deaneriesById.get(id)?.name ?? "Unknown", amount }))
+      .sort((a, b) => b.amount - a.amount),
+    byMonth: [...byMonthMap.entries()]
+      .map(([month, amount]) => ({ month, amount }))
+      .sort((a, b) => a.month.localeCompare(b.month)),
+    byContributionType: [...byTypeMap.entries()]
+      .map(([type, amount]) => ({ type, amount }))
+      .sort((a, b) => b.amount - a.amount),
+    recentContributions: rows.slice(0, 12).map((row) => ({
+      id: row.id,
+      contributorName: row.contributor_name,
+      parishName: row.parish_id ? maps.parishesById.get(row.parish_id)?.name ?? null : null,
+      deaneryName: row.deanery_id ? maps.deaneriesById.get(row.deanery_id)?.name ?? null : null,
+      vicariateName: row.vicariate_id ? maps.vicariatesById.get(row.vicariate_id)?.name ?? null : null,
+      contributionType: row.contribution_type,
+      amount: parseNumeric(row.amount),
+      currency: row.currency,
+      contributedOn: row.contributed_on,
+    })),
+  };
+}
+
+export async function getArchdioceseAuditLogs(
+  archdioceseId: string
+): Promise<ArchdioceseAuditLogEntry[]> {
+  const supabase = createAdminClient();
+
+  // Collect recent activity across tables as a pseudo audit-log
+  const [registrations, reports, contributions, projects] = await Promise.all([
+    supabase
+      .from("registration_requests")
+      .select("id, user_id, requested_role, approval_status, created_at")
+      .eq("requested_archdiocese_id", archdioceseId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("parish_reports")
+      .select("id, parish_id, status, updated_at")
+      .eq("archdiocese_id", archdioceseId)
+      .order("updated_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("parish_contributions")
+      .select("id, contributor_name, amount, created_at")
+      .eq("archdiocese_id", archdioceseId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("parish_projects")
+      .select("id, title, status, updated_at")
+      .eq("archdiocese_id", archdioceseId)
+      .order("updated_at", { ascending: false })
+      .limit(20),
+  ]);
+
+  const logs: ArchdioceseAuditLogEntry[] = [
+    ...(registrations.data ?? []).map((r) => ({
+      id: r.id,
+      action: `Registration ${r.approval_status}`,
+      entityType: "registration_request",
+      entityId: r.id,
+      userId: r.user_id,
+      userName: null,
+      details: `Role requested: ${r.requested_role}`,
+      createdAt: r.created_at,
+    })),
+    ...(reports.data ?? []).map((r) => ({
+      id: r.id,
+      action: `Report ${r.status}`,
+      entityType: "parish_report",
+      entityId: r.id,
+      userId: null,
+      userName: null,
+      details: `Parish report status: ${r.status}`,
+      createdAt: r.updated_at ?? new Date().toISOString(),
+    })),
+    ...(contributions.data ?? []).map((c) => ({
+      id: c.id,
+      action: "Contribution recorded",
+      entityType: "contribution",
+      entityId: c.id,
+      userId: null,
+      userName: null,
+      details: `${c.contributor_name} — ${c.amount}`,
+      createdAt: c.created_at ?? new Date().toISOString(),
+    })),
+    ...(projects.data ?? []).map((p) => ({
+      id: p.id,
+      action: `Project ${p.status}`,
+      entityType: "project",
+      entityId: p.id,
+      userId: null,
+      userName: null,
+      details: p.title,
+      createdAt: p.updated_at ?? new Date().toISOString(),
+    })),
+  ];
+
+  return logs
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 50);
+}
+
+export async function getArchdioceseAssignmentDetail(
+  archdioceseId: string,
+  targetUserId: string
+): Promise<ArchdioceseAssignmentDetail | null> {
+  const supabase = createAdminClient();
+  const [{ maps }, assignmentResult, profileResult] = await Promise.all([
+    getArchdioceseHierarchy(archdioceseId),
+    supabase
+      .from("user_assignments")
+      .select("*")
+      .eq("archdiocese_id", archdioceseId)
+      .eq("user_id", targetUserId)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .eq("id", targetUserId)
+      .maybeSingle(),
+  ]);
+
+  const assignment = assignmentResult.data;
+  const profile = profileResult.data;
+
+  if (!assignment && !profile) return null;
+
+  return {
+    userId: targetUserId,
+    fullName: profile?.full_name ?? null,
+    email: profile?.email ?? null,
+    role: assignment?.role ?? "none",
+    level: (assignment?.level as string) ?? "none",
+    isPrimary: assignment?.is_primary === true,
+    isActive: assignment?.is_active === true,
+    vicariateName: assignment?.vicariate_id
+      ? maps.vicariatesById.get(assignment.vicariate_id)?.name ?? null
+      : null,
+    deaneryName: assignment?.deanery_id
+      ? maps.deaneriesById.get(assignment.deanery_id)?.name ?? null
+      : null,
+    parishName: assignment?.parish_id
+      ? maps.parishesById.get(assignment.parish_id)?.name ?? null
+      : null,
+    assignedAt: assignment?.assigned_at ?? null,
+    assignmentId: assignment?.id ?? "",
   };
 }
