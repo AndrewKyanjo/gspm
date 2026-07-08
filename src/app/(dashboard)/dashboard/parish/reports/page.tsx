@@ -52,6 +52,9 @@ export default async function ParishReportsPage({ searchParams }: ParishReportsP
       title="Reporting workspace"
       subtitle="Monthly reports, audit-ready status tracking, and reporting-cycle visibility for parish teams."
       actions={<Button href="/dashboard/parish/reports/new">New report</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish reports"

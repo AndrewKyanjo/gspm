@@ -34,6 +34,9 @@ export default async function ParishMediaPage({ searchParams }: ParishMediaPageP
       title="Media library"
       subtitle="Photos, event galleries, and bulletin imagery arranged as a parish-ready media workspace."
       actions={<Button href="/dashboard/parish/media/upload">Upload media</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish media library"

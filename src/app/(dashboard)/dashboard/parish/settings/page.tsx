@@ -21,6 +21,9 @@ export default async function ParishSettingsPage() {
       eyebrow="Parish Settings"
       title="Parish configuration"
       subtitle="Profile, scope, and operator details presented in one stable administrative view."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish settings"

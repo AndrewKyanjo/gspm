@@ -38,6 +38,9 @@ export default async function ParishSearchPage({ searchParams }: ParishSearchPag
           Back to overview
         </Button>
       }
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title={query ? `Search results for "${query}"` : "Search the parish workspace"}

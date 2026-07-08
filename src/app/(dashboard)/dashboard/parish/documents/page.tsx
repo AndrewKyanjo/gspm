@@ -41,6 +41,9 @@ export default async function ParishDocumentsPage() {
       title="Documentation"
       subtitle="Policies, meeting minutes, bulletins, and working files in one disciplined parish records view."
       actions={<Button href="/dashboard/parish/documents/upload">Upload document</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish documentation"

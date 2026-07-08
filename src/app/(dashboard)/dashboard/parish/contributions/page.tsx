@@ -35,6 +35,9 @@ export default async function ParishContributionsPage() {
           Record contribution
         </Button>
       }
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish contributions"

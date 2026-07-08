@@ -56,6 +56,9 @@ export default async function ParishProjectDetailPage({ params }: ParishProjectD
           Back to projects
         </Button>
       }
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title={project.title}

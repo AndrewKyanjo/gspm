@@ -47,6 +47,9 @@ export default async function ParishDashboardPage() {
       title={dashboardContext.parishName ?? "Parish workspace"}
       subtitle="A single operational surface for reports, records, contributions, and local ministry follow-through."
       actions={<Button href="/dashboard/parish/reports">Open reports</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title={`Welcome back${user?.fullName ? `, ${user.fullName}` : ""}`}

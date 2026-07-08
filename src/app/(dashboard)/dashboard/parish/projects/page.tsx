@@ -45,6 +45,9 @@ export default async function ParishProjectsPage() {
       title="Project oversight"
       subtitle="Track construction, campaigns, and ministry initiatives from the parish side with one consistent operating view."
       actions={<Button href="/dashboard/parish/projects/new">New project</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parish projects"
