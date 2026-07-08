@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DashboardTopbar } from "@/components/dashboard/shared/dashboard-topbar";
 import { DeanerySidebar } from "../navigation/deanery-sidebar";
+import type { AppRole } from "@/types/auth";
 
 export function DeaneryShell({
   pathname,
@@ -9,6 +10,9 @@ export function DeaneryShell({
   subtitle,
   actions,
   searchQuery,
+  role,
+  userName,
+  userEmail,
   children,
 }: {
   pathname: string;
@@ -17,11 +21,19 @@ export function DeaneryShell({
   subtitle: string;
   actions?: ReactNode;
   searchQuery?: string;
+  role?: AppRole;
+  userName?: string | null;
+  userEmail?: string | null;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-surface md:flex">
-      <DeanerySidebar pathname={pathname} />
+      <DeanerySidebar
+        pathname={pathname}
+        role={role}
+        userName={userName}
+        userEmail={userEmail}
+      />
       <div className="min-w-0 flex-1">
         <DashboardTopbar
           eyebrow={eyebrow}
