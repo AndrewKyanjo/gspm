@@ -23,6 +23,9 @@ export default async function ArchdioceseUsersPage() {
       eyebrow="Archdiocese Users"
       title="User administration"
       subtitle="Role and scope oversight across the full hierarchy."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Assignments directory"

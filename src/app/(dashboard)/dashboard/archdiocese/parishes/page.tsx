@@ -55,6 +55,9 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
       subtitle="Search and supervise every parish with deanery and vicariate context intact."
       searchAction="/dashboard/archdiocese/parishes"
       searchQuery={query}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Parishes"

@@ -21,6 +21,9 @@ export default async function ArchdioceseSettingsPage() {
       eyebrow="Archdiocese Settings"
       title="Executive settings"
       subtitle="Profile, hierarchy, and governance configuration for the top-level dashboard."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Settings"

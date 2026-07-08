@@ -35,6 +35,9 @@ export default async function ArchdioceseVicariatesPage() {
       eyebrow="Archdiocese Vicariates"
       title="Vicariate oversight"
       subtitle="Manage the layer that will eventually get its own dedicated dashboard without changing the rest of the hierarchy model."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Vicariates"

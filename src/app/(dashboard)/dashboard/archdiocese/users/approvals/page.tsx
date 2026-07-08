@@ -43,6 +43,9 @@ export default async function ApprovalsPage() {
       eyebrow="Archdiocese Approvals"
       title="Registration approvals"
       subtitle="Centralized access review for the whole hierarchy."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Pending access requests"

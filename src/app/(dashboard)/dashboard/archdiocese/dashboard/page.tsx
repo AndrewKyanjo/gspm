@@ -58,6 +58,9 @@ export default async function ArchdioceseDashboardPage() {
       title={archdiocese.archdioceseName ?? "Executive console"}
       subtitle="Govern the full hierarchy with visibility that already preserves the future Vicariate layer."
       actions={<Button href="/dashboard/archdiocese/users/approvals">Review approvals</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Executive dashboard"

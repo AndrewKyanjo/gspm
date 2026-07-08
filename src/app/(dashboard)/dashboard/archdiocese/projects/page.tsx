@@ -43,6 +43,9 @@ export default async function ArchdioceseProjectsPage() {
       title="Projects oversight"
       subtitle="Monitor initiatives across the full hierarchy with parish, deanery, and vicariate context."
       actions={<Button href="/dashboard/archdiocese/projects/new">Create project</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Projects"

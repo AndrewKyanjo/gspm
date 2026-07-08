@@ -36,6 +36,9 @@ export default async function ArchdioceseDeaneriesPage() {
       title="Deanery registry"
       subtitle="Deaneries are presented through their Vicariate relationship instead of as direct Archdiocese children."
       searchAction="/dashboard/archdiocese/deaneries"
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Deaneries"

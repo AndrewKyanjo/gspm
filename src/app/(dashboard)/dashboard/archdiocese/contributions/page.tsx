@@ -29,6 +29,9 @@ export default async function ArchdioceseContributionsPage() {
       title="Contributions management"
       subtitle="Financial visibility across the full hierarchy."
       actions={<Button href="/dashboard/archdiocese/contributions/new">Create contribution</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Contributions"

@@ -34,6 +34,9 @@ export default async function ArchdioceseReportsPage() {
       eyebrow="Archdiocese Reports"
       title="Reports command center"
       subtitle="Track submissions and approvals across vicariates, deaneries, and parishes."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Reports"
