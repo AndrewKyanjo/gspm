@@ -44,6 +44,9 @@ export default async function DeaneryParishDetailPage({ params }: DeaneryParishD
           Back to parishes
         </Button>
       }
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title={parish.name}

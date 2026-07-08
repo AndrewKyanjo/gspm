@@ -42,6 +42,9 @@ export default async function DeaneryReportsPage({ searchParams }: DeaneryReport
       title="Parish report review"
       subtitle="Approve, reject, return, and comment on parish submissions within the deanery."
       searchQuery={query}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Reports queue"

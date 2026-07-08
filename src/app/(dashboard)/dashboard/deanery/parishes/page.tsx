@@ -41,6 +41,9 @@ export default async function DeaneryParishesPage({ searchParams }: DeaneryParis
       title="Parish supervision"
       subtitle="Search, compare, and monitor every parish assigned to the deanery."
       searchQuery={query}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Assigned parishes"

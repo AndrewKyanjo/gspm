@@ -14,7 +14,15 @@ export default async function DeanerySettingsPage() {
   const { context: deanery, users } = await getDeanerySettingsOverview(context.deaneryId);
 
   return (
-    <DeaneryShell pathname="/dashboard/deanery/settings" eyebrow="Deanery Settings" title="Deanery settings" subtitle="Profile, user access, and operational preferences for the deanery layer.">
+    <DeaneryShell
+      pathname="/dashboard/deanery/settings"
+      eyebrow="Deanery Settings"
+      title="Deanery settings"
+      subtitle="Profile, user access, and operational preferences for the deanery layer."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
+    >
       <PageHeader title="Settings" description="This page centralizes deanery profile context, assigned users, and supervisory access details." />
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard label="Assigned users" value={users.length} helper="Active deanery assignments" icon={Users} />

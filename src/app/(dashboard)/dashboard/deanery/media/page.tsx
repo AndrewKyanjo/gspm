@@ -22,7 +22,16 @@ export default async function DeaneryMediaPage({ searchParams }: DeaneryMediaPag
   const selectedItem = selectedPath ? items.find((item) => item.path === selectedPath) ?? null : null;
 
   return (
-    <DeaneryShell pathname="/dashboard/deanery/media" eyebrow="Deanery Media" title="Media oversight" subtitle="Supervise parish media and deanery uploads from one grouped gallery." actions={<Button href="/dashboard/deanery/media/upload">Upload deanery media</Button>}>
+    <DeaneryShell
+      pathname="/dashboard/deanery/media"
+      eyebrow="Deanery Media"
+      title="Media oversight"
+      subtitle="Supervise parish media and deanery uploads from one grouped gallery."
+      actions={<Button href="/dashboard/deanery/media/upload">Upload deanery media</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
+    >
       <PageHeader title="Media library" description="Compressed deanery uploads sit alongside aggregated parish media grouped by month." />
       <section className="grid gap-4 md:grid-cols-2">
         <StatCard label="Media items" value={items.length} helper="Parish and deanery images" icon={Image} />

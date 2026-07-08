@@ -21,7 +21,16 @@ export default async function DeaneryProjectDetailPage({ params }: DeaneryProjec
   if (!project) notFound();
 
   return (
-    <DeaneryShell pathname="/dashboard/deanery/projects" eyebrow="Deanery Projects" title={project.title} subtitle="Project detail from the deanery supervision layer." actions={<Button href="/dashboard/deanery/projects" variant="secondary">Back to projects</Button>}>
+    <DeaneryShell
+      pathname="/dashboard/deanery/projects"
+      eyebrow="Deanery Projects"
+      title={project.title}
+      subtitle="Project detail from the deanery supervision layer."
+      actions={<Button href="/dashboard/deanery/projects" variant="secondary">Back to projects</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
+    >
       <PageHeader title={project.title} description={project.parishName ?? "Parish project"} actions={<Badge>{project.status ?? "planned"}</Badge>} />
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <Card>

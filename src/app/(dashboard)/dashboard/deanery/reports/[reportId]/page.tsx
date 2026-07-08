@@ -44,6 +44,9 @@ export default async function DeaneryReportDetailPage({ params }: DeaneryReportD
       title={report.parishName ?? "Parish report"}
       subtitle="Full submission detail, comments, approval workflow, and review history."
       actions={<Button href="/dashboard/deanery/reports" variant="secondary">Back to reports</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title={`${report.parishName ?? "Parish"} • ${report.reportingPeriodLabel ?? "Period"}`}

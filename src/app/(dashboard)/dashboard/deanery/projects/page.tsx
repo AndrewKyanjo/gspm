@@ -33,7 +33,15 @@ export default async function DeaneryProjectsPage() {
   const totalBudget = projects.reduce((sum, project) => sum + (project.budgetAmount ?? 0), 0);
 
   return (
-    <DeaneryShell pathname="/dashboard/deanery/projects" eyebrow="Deanery Projects" title="Projects overview" subtitle="Aggregate parish project progress, funding, deadlines, and responsibility.">
+    <DeaneryShell
+      pathname="/dashboard/deanery/projects"
+      eyebrow="Deanery Projects"
+      title="Projects overview"
+      subtitle="Aggregate parish project progress, funding, deadlines, and responsibility."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
+    >
       <PageHeader title="Projects" description="Deanery-wide visibility into parish project status, budgets, and upcoming deadlines." />
 
       <section className="grid gap-4 md:grid-cols-2">

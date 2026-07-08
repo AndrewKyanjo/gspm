@@ -22,6 +22,9 @@ export default async function DeaneryContributionsPage() {
       eyebrow="Deanery Contributions"
       title="Contribution oversight"
       subtitle="Aggregated contribution performance across all parishes in the deanery."
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Contributions"

@@ -31,6 +31,9 @@ export default async function DeaneryDocumentsPage({ searchParams }: DeaneryDocu
       subtitle="Centralized deanery documents with versions, categories, archiving, and secure downloads."
       searchQuery={query}
       actions={<Button href="/dashboard/deanery/documents/upload">Upload document</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Deanery documents"

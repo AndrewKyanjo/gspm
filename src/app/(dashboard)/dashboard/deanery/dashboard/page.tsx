@@ -34,6 +34,9 @@ export default async function DeaneryDashboardPage() {
       title={deanery.deaneryName ?? "Deanery workspace"}
       subtitle="Executive supervision across all parishes within the deanery."
       actions={<Button href="/dashboard/deanery/reports">Review reports</Button>}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
     >
       <PageHeader
         title="Executive dashboard"

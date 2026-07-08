@@ -18,7 +18,16 @@ export default async function DeanerySearchPage({ searchParams }: DeanerySearchP
   const results = query ? await searchDeaneryWorkspace(context.deaneryId, query) : [];
 
   return (
-    <DeaneryShell pathname="/dashboard/deanery/search" eyebrow="Deanery Search" title="Workspace search" subtitle="Search across parish supervision, reports, documents, projects, contributions, and media." searchQuery={query}>
+    <DeaneryShell
+      pathname="/dashboard/deanery/search"
+      eyebrow="Deanery Search"
+      title="Workspace search"
+      subtitle="Search across parish supervision, reports, documents, projects, contributions, and media."
+      searchQuery={query}
+      userName={context.fullName}
+      userEmail={context.email}
+      role={context.role}
+    >
       <PageHeader title={query ? `Search results for "${query}"` : "Search the deanery workspace"} description={query ? `${results.length} result(s) across the deanery module.` : "Use the shell search bar to find records by parish, report, file, project, or media name."} />
       {query ? (
         results.length ? (
