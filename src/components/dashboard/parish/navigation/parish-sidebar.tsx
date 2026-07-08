@@ -8,6 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { DashboardSidebar, type DashboardNavigationItem } from "@/components/dashboard/shared/dashboard-sidebar";
+import type { AppRole } from "@/types/auth";
 
 const parishNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/parish", label: "Overview", icon: House },
@@ -19,7 +20,17 @@ const parishNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/parish/settings", label: "Settings", icon: Settings },
 ];
 
-export function ParishSidebar({ pathname }: { pathname: string }) {
+export function ParishSidebar({
+  pathname,
+  role,
+  userName,
+  userEmail,
+}: {
+  pathname: string;
+  role?: AppRole;
+  userName?: string | null;
+  userEmail?: string | null;
+}) {
   return (
     <DashboardSidebar
       pathname={pathname}
@@ -28,6 +39,9 @@ export function ParishSidebar({ pathname }: { pathname: string }) {
       subtitle="Quiet, high-trust operations for parish reporting, records, and local ministry planning."
       footerTitle="Parish workspace"
       footerDescription="One shell for reports, media, records, and operational review."
+      userName={userName}
+      userEmail={userEmail}
+      userRole={role}
     />
   );
 }
