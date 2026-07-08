@@ -1,11 +1,23 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isValidRoleLevelPair } from "@/lib/permissions/roles";
 import type { HierarchyLevel } from "@/types/hierarchy";
 import type { AppRole } from "@/types/roles";
+
+// ---------------------------------------------------------------------------
+// Logout
+// ---------------------------------------------------------------------------
+
+export async function logout(): Promise<void> {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect("/login");
+}
 
 type SignUpInput = {
   fullName: string;
