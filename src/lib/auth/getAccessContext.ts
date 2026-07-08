@@ -26,7 +26,7 @@ export async function getAccessContext(): Promise<AccessContext | null> {
 
   const { data: profile, error: profileError } = await adminSupabase
     .from("profiles")
-    .select("account_status, is_active")
+    .select("account_status, is_active, full_name, email")
     .eq("id", userId)
     .single();
 
@@ -67,5 +67,7 @@ export async function getAccessContext(): Promise<AccessContext | null> {
     parishId: assignment.parish_id,
     approved,
     active,
+    fullName: profile.full_name ?? null,
+    email: profile.email ?? null,
   };
 }

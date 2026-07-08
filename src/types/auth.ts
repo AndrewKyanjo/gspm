@@ -36,6 +36,10 @@ export type AccessContext = {
   parishId: string | null;
   approved: boolean;
   active: boolean;
+  /** The user's display name from profiles.full_name. */
+  fullName: string | null;
+  /** The user's email from profiles.email (or auth.users). */
+  email: string | null;
 };
 
 /** Thrown by requireAuth()/permission helpers when a check fails. */
