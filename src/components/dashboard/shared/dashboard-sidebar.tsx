@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SidebarUserFooter } from "./sidebar-user-footer";
+import type { AppRole } from "@/types/auth";
 
 export type DashboardNavigationItem = {
   href: string;
@@ -15,6 +17,9 @@ export function DashboardSidebar({
   subtitle,
   footerTitle,
   footerDescription,
+  userName,
+  userEmail,
+  userRole,
 }: {
   pathname: string;
   navigation: DashboardNavigationItem[];
@@ -22,6 +27,12 @@ export function DashboardSidebar({
   subtitle: string;
   footerTitle: string;
   footerDescription: string;
+  /** Currently signed-in user's display name (for the user footer). */
+  userName?: string | null;
+  /** Currently signed-in user's email (fallback if name is null). */
+  userEmail?: string | null;
+  /** Currently signed-in user's role (for the role badge in the footer). */
+  userRole?: AppRole;
 }) {
   return (
     <aside className="hidden w-[272px] shrink-0 border-r border-outline-variant bg-primary text-on-primary lg:flex lg:flex-col">
@@ -64,6 +75,14 @@ export function DashboardSidebar({
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-fixed-dim">{footerTitle}</p>
         <p className="mt-2 text-sm text-primary-fixed">{footerDescription}</p>
       </div>
+
+      {userRole && (
+        <SidebarUserFooter
+          userName={userName ?? null}
+          userEmail={userEmail ?? null}
+          userRole={userRole}
+        />
+      )}
     </aside>
   );
 }
