@@ -44,9 +44,13 @@ function navigationForRole(role: AppRole): DashboardNavigationItem[] {
 export function ArchdioceseSidebar({
   pathname,
   role,
+  userName,
+  userEmail,
 }: {
   pathname: string;
   role?: AppRole;
+  userName?: string | null;
+  userEmail?: string | null;
 }) {
   return (
     <DashboardSidebar
@@ -56,6 +60,9 @@ export function ArchdioceseSidebar({
       subtitle="System-wide oversight across hierarchy operations, approvals, finance, records, and parish performance."
       footerTitle="Executive console"
       footerDescription="Built around an explicit Archdiocese → Vicariate → Deanery → Parish hierarchy so the Vicariate layer can grow without refactoring the rest."
+      userName={userName}
+      userEmail={userEmail}
+      userRole={role}
     />
   );
 }

@@ -13,6 +13,8 @@ export function ArchdioceseShell({
   searchPlaceholder = "Search parishes, deaneries, users, or reports",
   searchQuery,
   role,
+  userName,
+  userEmail,
   children,
 }: {
   pathname: string;
@@ -24,11 +26,18 @@ export function ArchdioceseShell({
   searchPlaceholder?: string;
   searchQuery?: string;
   role?: AppRole;
+  userName?: string | null;
+  userEmail?: string | null;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-surface md:flex">
-      <ArchdioceseSidebar pathname={pathname} role={role} />
+      <ArchdioceseSidebar
+        pathname={pathname}
+        role={role}
+        userName={userName}
+        userEmail={userEmail}
+      />
       <div className="min-w-0 flex-1">
         <DashboardTopbar
           eyebrow={eyebrow}
