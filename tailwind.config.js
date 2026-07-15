@@ -4,6 +4,11 @@ module.exports = {
     theme: {
         extend: {
             colors: {
+                // Ministry Feed tokens (TODO.md §4.3)
+                "feed-post": "#E8F5E9",
+                "feed-post-border": "#A5D6A7",
+                "feed-reply": "#E3F2FD",
+                "feed-reply-border": "#90CAF9",
                 "outline-variant": "#c4c6cf",
                 "on-primary": "#ffffff",
                 "tertiary-fixed-dim": "#c4c7c9",
