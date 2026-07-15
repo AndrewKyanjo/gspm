@@ -33,6 +33,8 @@ export type ArchdioceseVicariateOverview = {
   name: string;
   code: string | null;
   status: string | null;
+  monthlyEmitemwaAmount: number;
+  goodSamaritanDayAmount: number;
   deaneryCount: number;
   parishCount: number;
 };

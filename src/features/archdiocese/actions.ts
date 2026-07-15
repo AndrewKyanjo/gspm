@@ -7,6 +7,7 @@
 // and toggle user assignments.
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { HierarchyLevel } from "@/types/auth";
@@ -14,7 +15,57 @@ import type { AppRole } from "@/types/roles";
 
 const ADMIN_ROLES = ["super_admin", "archdiocese_admin"] as const;
 
+export type ArchdioceseActionState = {
+  error: string | null;
+};
+
+function formString(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function formNumber(formData: FormData, key: string) {
+  const value = Number(formString(formData, key));
+  return Number.isFinite(value) ? value : NaN;
+}
+
 // ─── Hierarchy CRUD ────────────────────────────────────────────
+
+export async function createVicariate(
+  _previousState: ArchdioceseActionState,
+  formData: FormData,
+): Promise<ArchdioceseActionState> {
+  const ctx = await requireAuth({ roles: [...ADMIN_ROLES] });
+  if (!ctx.archdioceseId) return { error: "No archdiocese context." };
+
+  const name = formString(formData, "name");
+  const code = formString(formData, "code");
+  const monthlyAmount = formNumber(formData, "monthlyEmitemwaAmount");
+  const goodSamaritanAmount = formNumber(formData, "goodSamaritanDayAmount");
+
+  if (!name) return { error: "Vicariate name is required." };
+  if (!Number.isFinite(monthlyAmount) || monthlyAmount < 0) {
+    return { error: "Monthly rate must be zero or higher." };
+  }
+  if (!Number.isFinite(goodSamaritanAmount) || goodSamaritanAmount < 0) {
+    return { error: "Good Samaritan Day rate must be zero or higher." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("vicariates").insert({
+    archdiocese_id: ctx.archdioceseId,
+    name,
+    code: code || null,
+    status: "active",
+    monthly_emitemwa_amount: monthlyAmount,
+    good_samaritan_day_amount: goodSamaritanAmount,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/archdiocese/vicariates");
+  revalidatePath("/dashboard/archdiocese/settings/hierarchy");
+  redirect("/dashboard/archdiocese/vicariates");
+}
 
 export async function updateEntityStatus(
   entityType: "vicariate" | "deanery" | "parish",

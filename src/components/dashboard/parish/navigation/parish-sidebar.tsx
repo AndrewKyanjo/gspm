@@ -5,6 +5,7 @@ import {
   HandCoins,
   House,
   Image,
+  MessageSquareText,
   Settings,
 } from "lucide-react";
 import { DashboardSidebar, type DashboardNavigationItem } from "@/components/dashboard/shared/dashboard-sidebar";
@@ -17,6 +18,7 @@ const parishNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/parish/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/parish/media", label: "Media", icon: Image },
   { href: "/dashboard/parish/projects", label: "Projects", icon: FolderKanban },
+  { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
   { href: "/dashboard/parish/settings", label: "Settings", icon: Settings },
 ];
 

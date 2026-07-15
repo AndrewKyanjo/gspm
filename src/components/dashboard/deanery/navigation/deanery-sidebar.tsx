@@ -6,6 +6,7 @@ import {
   House,
   Image,
   Landmark,
+  MessageSquareText,
   Settings,
 } from "lucide-react";
 import { DashboardSidebar, type DashboardNavigationItem } from "@/components/dashboard/shared/dashboard-sidebar";
@@ -19,6 +20,7 @@ const deaneryNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/deanery/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/deanery/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/deanery/media", label: "Media", icon: Image },
+  { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
   { href: "/dashboard/deanery/settings", label: "Settings", icon: Settings },
 ];
 
