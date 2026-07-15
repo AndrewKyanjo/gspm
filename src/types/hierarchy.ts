@@ -15,6 +15,8 @@ export interface Vicariate {
   archdiocese_id: string;
   code?: string | null;
   status?: RecordStatus | null;
+  monthly_emitemwa_amount?: number | string | null;
+  good_samaritan_day_amount?: number | string | null;
 }
 
 export interface Deanery {
