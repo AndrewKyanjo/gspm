@@ -2,7 +2,7 @@
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { getArchdioceseParishOverviews } from "@/features/archdiocese/queries";
+import { getHierarchyCollections } from "@/lib/db/queries/hierarchy";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { CreateProjectForm } from "./create-form";
 
@@ -12,14 +12,14 @@ export default async function CreateProjectPage() {
   });
   if (!context.archdioceseId) return null;
 
-  const parishes = await getArchdioceseParishOverviews(context.archdioceseId);
+  const hierarchy = await getHierarchyCollections({ archdioceseId: context.archdioceseId });
 
   return (
     <ArchdioceseShell
       pathname="/dashboard/archdiocese/projects"
       eyebrow="Archdiocese Projects"
       title="Create project"
-      subtitle="Create a project on behalf of any parish in the archdiocese."
+      subtitle="Create a scoped contribution project across the archdiocese, a vicariate, a deanery, or selected parishes."
       actions={
         <Button href="/dashboard/archdiocese/projects" variant="secondary">
           All projects
@@ -30,12 +30,18 @@ export default async function CreateProjectPage() {
       role={context.role}
     >
       <PageHeader
-        title="New Project"
-        description="Create a project for any parish. This entry will be marked as proxy-entered by the Archdiocese."
+        title="New scoped project"
+        description="Once created, parishes inside the selected scope can immediately record contributions toward it."
       />
       <CreateProjectForm
-        archdioceseId={context.archdioceseId}
-        parishes={parishes}
+        vicariates={hierarchy.vicariates.map((vicariate) => ({ id: vicariate.id, name: vicariate.name }))}
+        deaneries={hierarchy.deaneries.map((deanery) => ({ id: deanery.id, name: deanery.name, vicariateId: deanery.vicariate_id }))}
+        parishes={hierarchy.parishes.map((parish) => ({
+          id: parish.id,
+          name: parish.name,
+          vicariateId: parish.vicariate_id,
+          deaneryId: parish.deanery_id,
+        }))}
       />
     </ArchdioceseShell>
   );

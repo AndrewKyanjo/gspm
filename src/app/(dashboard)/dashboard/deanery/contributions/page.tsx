@@ -1,58 +1,95 @@
-import { HandCoins, TrendingUp } from "lucide-react";
+import { CalendarCheck, HandCoins, ReceiptText } from "lucide-react";
 import { DeaneryShell } from "@/components/dashboard/deanery/shared/deanery-shell";
-import { BarListChart } from "@/components/dashboard/deanery/charts/bar-list-chart";
-import { TrendBars } from "@/components/dashboard/deanery/charts/trend-bars";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
-import { getDeaneryContributionAggregate } from "@/features/deanery/contributions/queries";
+import { PrintButton } from "@/components/dashboard/shared/print-button";
+import { Badge } from "@/components/ui/badge";
+import { getContributionRollupReport, getProjectContributionBreakdowns, MONTH_LABELS } from "@/features/contributions/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
-const currencyFormatter = new Intl.NumberFormat("en-UG", { style: "currency", currency: "UGX", maximumFractionDigits: 0 });
+const currencyFormatter = new Intl.NumberFormat("en-UG", {
+  style: "currency",
+  currency: "UGX",
+  maximumFractionDigits: 0,
+});
 
-export default async function DeaneryContributionsPage() {
+export default async function DeaneryContributionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ year?: string; month?: string }>;
+}) {
   const context = await requireAuth({ roles: ["deanery_head", "deanery_staff"] });
-  if (!context.deaneryId) return null;
+  if (!context.archdioceseId || !context.deaneryId) return null;
 
-  const aggregate = await getDeaneryContributionAggregate(context.deaneryId);
+  const params = await searchParams;
+  const now = new Date();
+  const year = Number(params?.year) || now.getUTCFullYear();
+  const month = Number(params?.month) || now.getUTCMonth() + 1;
+  const [report, projects] = await Promise.all([
+    getContributionRollupReport({
+      scope: { archdioceseId: context.archdioceseId, deaneryId: context.deaneryId },
+      year,
+      month,
+      title: "Deanery monthly contribution report",
+    }),
+    getProjectContributionBreakdowns({
+      archdioceseId: context.archdioceseId,
+      deaneryId: context.deaneryId,
+    }),
+  ]);
 
   return (
     <DeaneryShell
       pathname="/dashboard/deanery/contributions"
       eyebrow="Deanery Contributions"
-      title="Contribution oversight"
-      subtitle="Aggregated contribution performance across all parishes in the deanery."
+      title={`${MONTH_LABELS[month - 1]} ${year} contribution rollup`}
+      subtitle="Mandatory and project contribution performance across deanery parishes."
+      actions={<PrintButton />}
       userName={context.fullName}
       userEmail={context.email}
       role={context.role}
     >
       <PageHeader
-        title="Contributions"
-        description="Monthly, quarterly, yearly, and parish-level contribution analysis from the deanery perspective."
+        title={report.scopeLabel}
+        description="Monthly Emitemwa report with annual balances and Good Samaritan Day clearance."
       />
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <StatCard label="Total contributions" value={currencyFormatter.format(aggregate.totalContributions)} helper="All visible parish entries" icon={HandCoins} />
-        <StatCard label="Top parish" value={aggregate.topPerformingParish ?? "-"} helper="Highest contribution total" icon={TrendingUp} />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-2">
-        <BarListChart title="Contribution by parish" description="Compare total contribution value by parish." items={aggregate.byParish.map((item) => ({ label: item.parishName, value: item.amount }))} formatter={(value) => currencyFormatter.format(value)} />
-        <BarListChart title="Contribution breakdown" description="Contribution totals by contribution type." items={aggregate.breakdown} formatter={(value) => currencyFormatter.format(value)} />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-3">
-        <TrendBars title="Monthly trends" description="Recent monthly contribution values." items={aggregate.monthlyTrends} formatter={(value) => currencyFormatter.format(value)} />
-        <TrendBars title="Quarterly trends" description="Quarter-level contribution totals." items={aggregate.quarterlyTrends} formatter={(value) => currencyFormatter.format(value)} />
-        <TrendBars title="Yearly trends" description="Annual contribution totals." items={aggregate.yearlyTrends} formatter={(value) => currencyFormatter.format(value)} />
+      <section className="grid gap-4 md:grid-cols-3">
+        <StatCard label="Month paid" value={currencyFormatter.format(report.totals.monthPaid)} helper="Selected month" icon={HandCoins} />
+        <StatCard label="Annual balance" value={currencyFormatter.format(report.totals.annualBalance)} helper="All deanery parishes" icon={ReceiptText} />
+        <StatCard
+          label="Good Samaritan cleared"
+          value={`${report.totals.goodSamaritanClearedCount}/${report.rows.length}`}
+          helper="Parish count"
+          icon={CalendarCheck}
+        />
       </section>
 
       <SimpleTable
-        title="Contribution leaders"
-        rows={aggregate.byParish}
+        title="Parish contribution rollup"
+        rows={report.rows}
         columns={[
-          { header: "Parish", cell: (item) => item.parishName },
-          { header: "Amount", cell: (item) => currencyFormatter.format(item.amount) },
+          { header: "Parish", cell: (row) => <span className="font-medium">{row.parishName}</span> },
+          { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
+          { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
+          { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
+          {
+            header: "Good Samaritan",
+            cell: (row) =>
+              row.goodSamaritanCleared ? <Badge variant="success">Cleared</Badge> : <Badge variant="warning">Open</Badge>,
+          },
+        ]}
+      />
+
+      <SimpleTable
+        title="Project contribution totals"
+        rows={projects}
+        columns={[
+          { header: "Project", cell: (row) => <span className="font-medium">{row.name}</span> },
+          { header: "Raised", cell: (row) => currencyFormatter.format(row.totalRaised) },
+          { header: "Target", cell: (row) => (row.targetAmount == null ? "-" : currencyFormatter.format(row.targetAmount)) },
+          { header: "Parishes paid", cell: (row) => row.byParish.length },
         ]}
       />
     </DeaneryShell>
