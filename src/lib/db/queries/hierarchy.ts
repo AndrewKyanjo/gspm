@@ -23,6 +23,8 @@ export type HierarchyMaps = {
 };
 
 type HierarchyColumn = "archdioceseId" | "vicariateId" | "deaneryId" | "parishId";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase query builders are deeply generic and need to retain their promise-like type through chained filters.
+type SupabaseQueryBuilder = any;
 
 const COLUMN_BY_SCOPE_KEY: Record<HierarchyColumn, string> = {
   archdioceseId: "archdiocese_id",
@@ -31,9 +33,8 @@ const COLUMN_BY_SCOPE_KEY: Record<HierarchyColumn, string> = {
   parishId: "id",
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyHierarchyScope(
-  query: any,
+  query: SupabaseQueryBuilder,
   scope: HierarchyScope,
   supportedColumns: HierarchyColumn[],
 ) {
@@ -56,7 +57,10 @@ export async function getHierarchyCollections(scope: HierarchyScope = {}): Promi
     : supabase.from("archdioceses").select("id, name, code, status").order("name", { ascending: true });
 
   const vicariateQuery = applyHierarchyScope(
-    supabase.from("vicariates").select("id, name, archdiocese_id, code, status").order("name", { ascending: true }),
+    supabase
+      .from("vicariates")
+      .select("id, name, archdiocese_id, code, status, monthly_emitemwa_amount, good_samaritan_day_amount")
+      .order("name", { ascending: true }),
     scope,
     ["archdioceseId", "vicariateId"]
   );

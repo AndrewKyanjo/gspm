@@ -214,6 +214,8 @@ export async function getArchdioceseVicariateOverviews(
     name: vicariate.name,
     code: vicariate.code ?? null,
     status: vicariate.status ?? null,
+    monthlyEmitemwaAmount: parseNumeric(vicariate.monthly_emitemwa_amount ?? 50000),
+    goodSamaritanDayAmount: parseNumeric(vicariate.good_samaritan_day_amount ?? 250000),
     deaneryCount: collections.deaneries.filter((deanery) => deanery.vicariate_id === vicariate.id).length,
     parishCount: collections.parishes.filter((parish) => parish.vicariate_id === vicariate.id).length,
   }));

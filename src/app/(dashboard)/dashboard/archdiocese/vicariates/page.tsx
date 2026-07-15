@@ -5,8 +5,16 @@ import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { VicariateRateForm } from "@/components/dashboard/archdiocese/forms/vicariate-rate-form";
+import { VicariateCreateForm } from "@/components/dashboard/archdiocese/forms/vicariate-create-form";
 import { getArchdioceseVicariateOverviews } from "@/features/archdiocese/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
+
+const currencyFormatter = new Intl.NumberFormat("en-UG", {
+  style: "currency",
+  currency: "UGX",
+  maximumFractionDigits: 0,
+});
 
 function statusVariant(status: string | null) {
   switch (status) {
@@ -60,6 +68,8 @@ export default async function ArchdioceseVicariatesPage() {
         />
       </section>
 
+      <VicariateCreateForm />
+
       <SimpleTable
         title="Vicariate registry"
         description="Each row owns its deanery and parish footprint explicitly."
@@ -85,6 +95,28 @@ export default async function ArchdioceseVicariatesPage() {
           {
             header: "Parishes",
             cell: (item) => item.parishCount,
+          },
+          {
+            header: "Rates",
+            cell: (item) => (
+              <div className="space-y-1 text-sm">
+                <div>{currencyFormatter.format(item.monthlyEmitemwaAmount)} / month</div>
+                <div className="text-xs text-on-surface-variant">
+                  {currencyFormatter.format(item.goodSamaritanDayAmount)} Good Samaritan Day
+                </div>
+              </div>
+            ),
+          },
+          {
+            header: "Edit rates",
+            cell: (item) => (
+              <VicariateRateForm
+                vicariateId={item.id}
+                monthlyAmount={item.monthlyEmitemwaAmount}
+                goodSamaritanAmount={item.goodSamaritanDayAmount}
+                returnTo="/dashboard/archdiocese/vicariates"
+              />
+            ),
           },
           {
             header: "Open",

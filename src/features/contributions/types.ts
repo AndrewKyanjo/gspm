@@ -62,3 +62,130 @@ export type BulkCreateContributionsInput = {
     sourceChannel: SourceChannel;
   }>;
 };
+
+export type ContributionKind = "monthly" | "good_samaritan_day";
+
+export type MonthContributionStatus = "paid" | "partial" | "unpaid";
+
+export type MonthlyContributionSummary = {
+  month: number;
+  label: string;
+  due: number;
+  paid: number;
+  balance: number;
+  status: MonthContributionStatus;
+};
+
+export type EmitemwaPayment = {
+  id: string;
+  parishId: string;
+  parishName: string | null;
+  paymentKind: ContributionKind;
+  contributionYear: number;
+  contributionMonth: number | null;
+  amount: number;
+  currency: string;
+  paidOn: string;
+  paymentMethod: string | null;
+  referenceNumber: string | null;
+  notes: string | null;
+};
+
+export type GoodSamaritanStatus = {
+  due: number;
+  paid: number;
+  balance: number;
+  cleared: boolean;
+};
+
+export type ParishContributionProject = {
+  id: string;
+  name: string;
+  description: string | null;
+  targetAmount: number | null;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+  scopeLevel: string;
+  totalRaised: number;
+  parishRaised: number;
+};
+
+export type ParishContributionDashboard = {
+  parishId: string;
+  parishName: string;
+  deaneryName: string | null;
+  vicariateName: string | null;
+  year: number;
+  monthlyRate: number;
+  goodSamaritanRate: number;
+  months: MonthlyContributionSummary[];
+  monthlyPaidTotal: number;
+  monthlyAnnualDue: number;
+  monthlyAnnualBalance: number;
+  goodSamaritan: GoodSamaritanStatus;
+  payments: EmitemwaPayment[];
+  projects: ParishContributionProject[];
+  legacyOpeningBalance: {
+    sourceParishName: string;
+    paidAmount: number;
+    balanceAmount: number;
+  } | null;
+};
+
+export type ContributionReportRow = {
+  parishId: string;
+  parishName: string;
+  deaneryName: string | null;
+  vicariateName: string | null;
+  monthlyDue: number;
+  monthPaid: number;
+  ytdPaid: number;
+  annualDue: number;
+  annualBalance: number;
+  goodSamaritanDue: number;
+  goodSamaritanPaid: number;
+  goodSamaritanCleared: boolean;
+  payments: EmitemwaPayment[];
+};
+
+export type ContributionRollupReport = {
+  title: string;
+  scopeLabel: string;
+  year: number;
+  month: number;
+  rows: ContributionReportRow[];
+  totals: {
+    monthPaid: number;
+    ytdPaid: number;
+    annualDue: number;
+    annualBalance: number;
+    goodSamaritanDue: number;
+    goodSamaritanPaid: number;
+    goodSamaritanClearedCount: number;
+  };
+};
+
+export type ProjectContributionBreakdown = {
+  projectId: string;
+  name: string;
+  description: string | null;
+  targetAmount: number | null;
+  totalRaised: number;
+  byParish: Array<{
+    parishId: string;
+    parishName: string;
+    amount: number;
+  }>;
+};
+
+export type ContributionProjectOverview = {
+  id: string;
+  name: string;
+  status: string;
+  scopeLevel: string;
+  targetAmount: number | null;
+  totalRaised: number;
+  startDate: string | null;
+  endDate: string | null;
+};

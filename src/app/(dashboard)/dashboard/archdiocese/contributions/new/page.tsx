@@ -3,6 +3,7 @@ import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/arch
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { getArchdioceseParishOverviews } from "@/features/archdiocese/queries";
+import { getContributionProjectOverviews } from "@/features/contributions/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { CreateContributionForm } from "./create-form";
 
@@ -12,7 +13,10 @@ export default async function CreateContributionPage() {
   });
   if (!context.archdioceseId) return null;
 
-  const parishes = await getArchdioceseParishOverviews(context.archdioceseId);
+  const [parishes, projects] = await Promise.all([
+    getArchdioceseParishOverviews(context.archdioceseId),
+    getContributionProjectOverviews({ archdioceseId: context.archdioceseId }),
+  ]);
 
   return (
     <ArchdioceseShell
@@ -30,12 +34,12 @@ export default async function CreateContributionPage() {
       role={context.role}
     >
       <PageHeader
-        title="New Contribution"
-        description="Record a contribution for any parish. This entry will be marked as proxy-entered by the Archdiocese."
+        title="New contribution payment"
+        description="Record mandatory Emitemwa, Good Samaritan Day, or project payments for any parish."
       />
       <CreateContributionForm
-        archdioceseId={context.archdioceseId}
         parishes={parishes}
+        projects={projects}
       />
     </ArchdioceseShell>
   );
