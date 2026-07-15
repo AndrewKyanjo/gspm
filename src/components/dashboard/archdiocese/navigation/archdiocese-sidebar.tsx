@@ -7,6 +7,7 @@ import {
   House,
   Image,
   Landmark,
+  MessageSquareText,
   Settings,
   ShieldCheck,
   Users,
@@ -24,6 +25,7 @@ const ALL_ARCHDIOCESE_NAV_ITEMS: DashboardNavigationItem[] = [
   { href: "/dashboard/archdiocese/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/archdiocese/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/archdiocese/media", label: "Media", icon: Image },
+  { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
   { href: "/dashboard/archdiocese/users", label: "Users", icon: Users },
   { href: "/dashboard/archdiocese/settings", label: "Settings", icon: Settings },
 ];
