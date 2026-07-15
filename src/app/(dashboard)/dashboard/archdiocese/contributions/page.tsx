@@ -84,9 +84,31 @@ export default async function ArchdioceseContributionsPage({
               </div>
             ),
           },
+          {
+            header: "Rate",
+            cell: (row) => (
+              <div className="space-y-1 text-sm">
+                <div>{currencyFormatter.format(row.monthlyDue)} / month</div>
+                <div className="text-xs text-on-surface-variant">
+                  Annual: {currencyFormatter.format(row.annualDue)}
+                </div>
+              </div>
+            ),
+          },
           { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
           { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
+          {
+            header: "Opening",
+            cell: (row) =>
+              row.hasLegacyOpeningBalance ? (
+                <Badge variant="info">
+                  {currencyFormatter.format(row.legacyPaid)} paid / {currencyFormatter.format(row.legacyBalance)} bal
+                </Badge>
+              ) : (
+                <Badge>Live only</Badge>
+              ),
+          },
           {
             header: "Good Samaritan",
             cell: (row) =>

@@ -138,6 +138,9 @@ export type ContributionReportRow = {
   parishName: string;
   deaneryName: string | null;
   vicariateName: string | null;
+  legacyPaid: number;
+  legacyBalance: number;
+  hasLegacyOpeningBalance: boolean;
   monthlyDue: number;
   monthPaid: number;
   ytdPaid: number;
