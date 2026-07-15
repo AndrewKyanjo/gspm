@@ -15,21 +15,27 @@ export function MediaUploadForm({ archdioceseId, parishes, userId }: Props) {
   const [parishId, setParishId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null;
-    setFile(f);
-    if (f && f.type.startsWith("image/")) {
+    const selectedFiles = Array.from(e.target.files ?? []);
+    setFiles(selectedFiles);
+    setPreviews([]);
+
+    for (const selectedFile of selectedFiles.slice(0, 6)) {
+      if (!selectedFile.type.startsWith("image/")) {
+        continue;
+      }
+
       const reader = new FileReader();
-      reader.onload = () => setPreview(reader.result as string);
-      reader.readAsDataURL(f);
-    } else {
-      setPreview(null);
+      reader.onload = () => {
+        setPreviews((current) => [...current, reader.result as string]);
+      };
+      reader.readAsDataURL(selectedFile);
     }
   }
 
@@ -39,29 +45,34 @@ export function MediaUploadForm({ archdioceseId, parishes, userId }: Props) {
 
     if (!title.trim()) { setError("Title is required."); return; }
     if (!parishId) { setError("Please select a parish."); return; }
-    if (!file) { setError("Please select an image file."); return; }
-    if (!file.type.startsWith("image/")) { setError("Only image files are supported."); return; }
-    if (file.size > 10 * 1024 * 1024) { setError("File size must be under 10 MB."); return; }
+    if (files.length === 0) { setError("Please select at least one image file."); return; }
+    for (const selectedFile of files) {
+      if (!selectedFile.type.startsWith("image/")) { setError("Only image files are supported."); return; }
+      if (selectedFile.size > 10 * 1024 * 1024) { setError("Each file must be under 10 MB."); return; }
+    }
 
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", title.trim());
-      formData.append("description", description.trim());
-      formData.append("archdioceseId", archdioceseId);
-      formData.append("parishId", parishId);
-      formData.append("uploadedBy", userId);
+      for (const [index, selectedFile] of files.entries()) {
+        const formData = new FormData();
+        const itemTitle = files.length > 1 ? `${title.trim()} - ${index + 1}` : title.trim();
+        formData.append("file", selectedFile);
+        formData.append("title", itemTitle);
+        formData.append("description", description.trim());
+        formData.append("archdioceseId", archdioceseId);
+        formData.append("parishId", parishId);
+        formData.append("uploadedBy", userId);
 
-      const res = await fetch("/api/archdiocese/media/upload", {
-        method: "POST",
-        body: formData,
-      });
+        const res = await fetch("/api/archdiocese/media/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(body.error ?? "Upload failed");
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({ error: "Upload failed" }));
+          throw new Error(body.error ?? "Upload failed");
+        }
       }
 
       setSuccess(true);
@@ -109,13 +120,17 @@ export function MediaUploadForm({ archdioceseId, parishes, userId }: Props) {
 
       <div className="space-y-1">
         <label htmlFor="file" className="text-sm font-medium text-on-surface block">Image File</label>
-        <input id="file" type="file" accept="image/*" onChange={handleFileChange} required className="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-on-primary hover:file:bg-primary-container" />
+        <input id="file" type="file" accept="image/*" multiple onChange={handleFileChange} required className="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-on-primary hover:file:bg-primary-container" />
         <p className="text-xs text-on-surface-variant mt-1">Max 10 MB. JPEG, PNG, WebP supported.</p>
       </div>
 
-      {preview && (
-        <div className="rounded-xl border border-outline-variant overflow-hidden">
-          <img src={preview} alt="Preview" className="w-full object-cover max-h-64" />
+      {previews.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {previews.map((preview, index) => (
+            <div key={`${preview}-${index}`} className="rounded-xl border border-outline-variant overflow-hidden">
+              <img src={preview} alt={`Preview ${index + 1}`} className="w-full object-cover max-h-64" />
+            </div>
+          ))}
         </div>
       )}
 

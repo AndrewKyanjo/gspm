@@ -61,10 +61,15 @@ export function MediaUploadForm() {
   return (
     <form
       action={async (formData) => {
-        const file = formData.get("file");
-        if (file instanceof File && file.size > 0) {
-          const compressedFile = await compressImage(file);
-          formData.set("file", compressedFile);
+        const files = formData
+          .getAll("file")
+          .filter((file): file is File => file instanceof File && file.size > 0);
+
+        if (files.length > 0) {
+          formData.delete("file");
+          for (const file of files) {
+            formData.append("file", await compressImage(file));
+          }
         }
 
         action(formData);
@@ -102,12 +107,13 @@ export function MediaUploadForm() {
           name="file"
           type="file"
           accept="image/*"
+          multiple
           className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface"
         />
       </label>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Uploading..." : "Upload image"}
+        {pending ? "Uploading..." : "Upload image(s)"}
       </Button>
     </form>
   );
