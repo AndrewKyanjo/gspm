@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/dashboard/shared/notifications/NotificationBell";
 
 export function DashboardTopbar({
   eyebrow,
@@ -49,10 +49,7 @@ export function DashboardTopbar({
             />
           </form>
           <Badge variant="info">{scopeLabel}</Badge>
-          <Button variant="secondary" size="sm" className="gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
-          </Button>
+          <NotificationBell />
           {actions}
         </div>
       </div>
