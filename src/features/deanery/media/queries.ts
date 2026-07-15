@@ -11,6 +11,10 @@ function formatMonthLabel(monthKey: string) {
   return date.toLocaleDateString("en-US", { month: "long", year: "2-digit", timeZone: "UTC" });
 }
 
+function displayNameFromStorageName(name: string) {
+  return name.replace(/\.[^.]+$/, "").replace(/__[^_]+$/, "");
+}
+
 async function listBucketMedia(
   bucket: string,
   prefix: string,
@@ -36,7 +40,7 @@ async function listBucketMedia(
         const { data: signedUrl } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 15);
         return {
           path,
-          name: item.name,
+          name: displayNameFromStorageName(item.name),
           parishName,
           monthLabel: formatMonthLabel(monthKey),
           category,

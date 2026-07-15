@@ -22,6 +22,10 @@ function isImageName(name: string) {
   return imageExtensions.some((extension) => lowerName.endsWith(extension));
 }
 
+function displayNameFromStorageName(name: string) {
+  return name.replace(/\.[^.]+$/, "").replace(/__[^_]+$/, "");
+}
+
 export async function getParishMediaSummary(): Promise<ParishMediaSummary> {
   return {
     recordsAvailable: false,
@@ -68,7 +72,7 @@ export async function getParishMediaGroups(parishId: string): Promise<ParishMedi
               .createSignedUrl(fullPath, 60 * 15);
 
             const item: ParishMediaItem = {
-              name: file.name,
+              name: displayNameFromStorageName(file.name),
               path: fullPath,
               monthKey,
               monthLabel: formatMonthLabel(monthKey),
