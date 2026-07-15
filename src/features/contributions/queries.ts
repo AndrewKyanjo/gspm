@@ -187,6 +187,7 @@ export async function getParishContributionDashboard(
       .from("contribution_legacy_opening_balances")
       .select("source_parish_name, paid_amount, balance_amount")
       .eq("parish_id", parishId)
+      .eq("snapshot_year", year)
       .order("imported_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
@@ -216,6 +217,10 @@ export async function getParishContributionDashboard(
   const monthlyPaidTotal = months.reduce((total, month) => total + month.paid, 0);
   const monthlyAnnualDue = monthlyRate * 12;
   const goodSamaritanPaid = sumRows(gsdRows, "amount");
+  const legacyPaid = legacyResult.data ? numberValue(legacyResult.data.paid_amount) : 0;
+  const legacyBalance = legacyResult.data ? numberValue(legacyResult.data.balance_amount) : 0;
+  const effectiveAnnualDue = legacyResult.data ? legacyPaid + legacyBalance : monthlyAnnualDue;
+  const effectivePaidTotal = legacyPaid + monthlyPaidTotal;
 
   return {
     parishId,
@@ -226,9 +231,9 @@ export async function getParishContributionDashboard(
     monthlyRate,
     goodSamaritanRate,
     months,
-    monthlyPaidTotal,
-    monthlyAnnualDue,
-    monthlyAnnualBalance: Math.max(monthlyAnnualDue - monthlyPaidTotal, 0),
+    monthlyPaidTotal: effectivePaidTotal,
+    monthlyAnnualDue: effectiveAnnualDue,
+    monthlyAnnualBalance: Math.max(effectiveAnnualDue - effectivePaidTotal, 0),
     goodSamaritan: {
       due: goodSamaritanRate,
       paid: goodSamaritanPaid,
@@ -290,14 +295,30 @@ export async function getContributionRollupReport({
 
   const parishIds = parishes.map((parish) => parish.id);
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("emitemwa_payments")
-    .select("*")
-    .in("parish_id", parishIds)
-    .eq("contribution_year", year)
-    .order("paid_on", { ascending: false });
+  const [paymentsResult, legacyResult] = await Promise.all([
+    supabase
+      .from("emitemwa_payments")
+      .select("*")
+      .in("parish_id", parishIds)
+      .eq("contribution_year", year)
+      .order("paid_on", { ascending: false }),
+    supabase
+      .from("contribution_legacy_opening_balances")
+      .select("parish_id, paid_amount, balance_amount, snapshot_year")
+      .in("parish_id", parishIds)
+      .eq("snapshot_year", year),
+  ]);
 
-  const paymentRows = (data ?? []) as GenericRow[];
+  const paymentRows = (paymentsResult.data ?? []) as GenericRow[];
+  const legacyByParish = new Map(
+    ((legacyResult.data ?? []) as GenericRow[]).map((row) => [
+      String(row.parish_id),
+      {
+        paid: numberValue(row.paid_amount),
+        balance: numberValue(row.balance_amount),
+      },
+    ]),
+  );
   const rows: ContributionReportRow[] = parishes.map((parish) => {
     const vicariate = maps.vicariatesById.get(parish.vicariate_id);
     const deanery = maps.deaneriesById.get(parish.deanery_id);
@@ -307,8 +328,12 @@ export async function getContributionRollupReport({
     const monthlyPayments = parishPayments.filter((payment) => payment.payment_kind === "monthly");
     const monthPayments = monthlyPayments.filter((payment) => Number(payment.contribution_month) === month);
     const gsdPayments = parishPayments.filter((payment) => payment.payment_kind === "good_samaritan_day");
-    const ytdPaid = monthlyPayments.reduce((total, payment) => total + numberValue(payment.amount), 0);
-    const annualDue = monthlyDue * 12;
+    const currentYearMonthlyPaid = monthlyPayments.reduce((total, payment) => total + numberValue(payment.amount), 0);
+    const legacy = legacyByParish.get(parish.id);
+    const legacyPaid = legacy?.paid ?? 0;
+    const legacyBalance = legacy?.balance ?? 0;
+    const ytdPaid = legacyPaid + currentYearMonthlyPaid;
+    const annualDue = legacy ? legacyPaid + legacyBalance : monthlyDue * 12;
     const goodSamaritanPaid = gsdPayments.reduce((total, payment) => total + numberValue(payment.amount), 0);
 
     return {
@@ -316,6 +341,9 @@ export async function getContributionRollupReport({
       parishName: parish.name,
       deaneryName: deanery?.name ?? null,
       vicariateName: vicariate?.name ? String(vicariate.name) : null,
+      legacyPaid,
+      legacyBalance,
+      hasLegacyOpeningBalance: Boolean(legacy),
       monthlyDue,
       monthPaid: monthPayments.reduce((total, payment) => total + numberValue(payment.amount), 0),
       ytdPaid,
