@@ -59,13 +59,23 @@ export default async function ArchdioceseContributionsPage({
       />
 
       <section className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Month paid" value={currencyFormatter.format(report.totals.monthPaid)} helper="Selected month" icon={HandCoins} />
-        <StatCard label="Annual balance" value={currencyFormatter.format(report.totals.annualBalance)} helper="All parishes" icon={ReceiptText} />
         <StatCard
-          label="Good Samaritan cleared"
-          value={`${report.totals.goodSamaritanClearedCount}/${report.rows.length}`}
-          helper="Parish count"
+          label="Current month paid"
+          value={currencyFormatter.format(report.totals.monthPaid)}
+          helper={`${MONTH_LABELS[month - 1]} payments from all parishes`}
+          icon={HandCoins}
+        />
+        <StatCard
+          label="YTD paid"
+          value={currencyFormatter.format(report.totals.ytdPaid)}
+          helper={`Total paid in ${year} by all parishes`}
           icon={CalendarCheck}
+        />
+        <StatCard
+          label="General balance"
+          value={currencyFormatter.format(report.totals.annualBalance)}
+          helper="Outstanding balance for all parishes"
+          icon={ReceiptText}
         />
       </section>
 

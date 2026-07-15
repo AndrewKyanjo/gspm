@@ -496,6 +496,66 @@ for select
 to authenticated
 using (app.current_user_is_admin());
 
+with missing_parishes (name, code, deanery_name) as (
+  values
+    ('Kasenge Parish', 'PAR-KASENGE', 'Nabbingo Deanery'),
+    ('Kibibi Parish', 'PAR-KIBIBI', 'Mitala Maria Deanery'),
+    ('Mpigi Parish', 'PAR-MPIGI', 'Mpigi Deanery'),
+    ('Salaama Parish', 'PAR-SALAAMA', 'Nsambya Deanery')
+),
+parent_records as (
+  select
+    missing_parishes.name,
+    missing_parishes.code,
+    archdioceses.id as archdiocese_id,
+    deaneries.id as deanery_id,
+    deaneries.vicariate_id
+  from missing_parishes
+  join public.deaneries deaneries
+    on deaneries.name = missing_parishes.deanery_name
+  cross join lateral (
+    select id
+    from public.archdioceses
+    order by name
+    limit 1
+  ) archdioceses
+)
+insert into public.parishes (
+  archdiocese_id,
+  vicariate_id,
+  deanery_id,
+  name,
+  code,
+  status
+)
+select
+  parent_records.archdiocese_id,
+  parent_records.vicariate_id,
+  parent_records.deanery_id,
+  parent_records.name,
+  parent_records.code,
+  'active'
+from parent_records
+where not exists (
+  select 1
+  from public.parishes existing
+  where lower(
+    regexp_replace(
+      regexp_replace(lower(existing.name), '\mparish\M', '', 'g'),
+      '[^a-z0-9]+',
+      '',
+      'g'
+    )
+  ) = lower(
+    regexp_replace(
+      regexp_replace(lower(parent_records.name), '\mparish\M', '', 'g'),
+      '[^a-z0-9]+',
+      '',
+      'g'
+    )
+  )
+);
+
 create temp table temp_legacy_contribution_import (
   source_parish_name text primary key,
   paid_amount numeric(12, 2) not null,
@@ -580,17 +640,62 @@ values
   ('Salaama', 100000, 500000),
   ('Wakiso', 600000, 0);
 
-with normalized_matches as (
+create temp table temp_legacy_contribution_aliases (
+  source_key text primary key,
+  parish_key text not null
+);
+
+insert into temp_legacy_contribution_aliases (source_key, parish_key)
+values
+  ('bugonga', 'bugongo'),
+  ('bwayise', 'bwayiise'),
+  ('jinjakaloli', 'jjinjakalooli'),
+  ('mapeera', 'mapeeranabulagala')
+on conflict (source_key) do nothing;
+
+create temp table temp_legacy_contribution_matches as
+with legacy_normalized as (
+  select
+    legacy.*,
+    lower(
+      regexp_replace(
+        regexp_replace(lower(legacy.source_parish_name), '\mparish\M', '', 'g'),
+        '[^a-z0-9]+',
+        '',
+        'g'
+      )
+    ) as source_key
+  from temp_legacy_contribution_import legacy
+),
+parish_normalized as (
+  select
+    p.id,
+    p.name,
+    lower(
+      regexp_replace(
+        regexp_replace(lower(p.name), '\mparish\M', '', 'g'),
+        '[^a-z0-9]+',
+        '',
+        'g'
+      )
+    ) as parish_key
+  from public.parishes p
+),
+normalized_matches as (
   select
     legacy.source_parish_name,
     legacy.paid_amount,
     legacy.balance_amount,
     p.id as parish_id
-  from temp_legacy_contribution_import legacy
-  join public.parishes p
-    on lower(regexp_replace(p.name, '[^a-z0-9]+', '', 'g'))
-     = lower(regexp_replace(legacy.source_parish_name, '[^a-z0-9]+', '', 'g'))
+  from legacy_normalized legacy
+  left join temp_legacy_contribution_aliases aliases
+    on aliases.source_key = legacy.source_key
+  join parish_normalized p
+    on p.parish_key = coalesce(aliases.parish_key, legacy.source_key)
 )
+select *
+from normalized_matches;
+
 insert into public.contribution_legacy_opening_balances (
   parish_id,
   source_parish_name,
@@ -598,17 +703,22 @@ insert into public.contribution_legacy_opening_balances (
   balance_amount
 )
 select parish_id, source_parish_name, paid_amount, balance_amount
-from normalized_matches
-on conflict (parish_id, source_label) do nothing;
+from temp_legacy_contribution_matches
+on conflict (parish_id, source_label) do update
+set source_parish_name = excluded.source_parish_name,
+    paid_amount = excluded.paid_amount,
+    balance_amount = excluded.balance_amount,
+    snapshot_year = excluded.snapshot_year,
+    currency = excluded.currency,
+    imported_at = timezone('utc', now());
 
 with unmatched as (
   select legacy.*
   from temp_legacy_contribution_import legacy
   where not exists (
     select 1
-    from public.parishes p
-    where lower(regexp_replace(p.name, '[^a-z0-9]+', '', 'g'))
-        = lower(regexp_replace(legacy.source_parish_name, '[^a-z0-9]+', '', 'g'))
+    from temp_legacy_contribution_matches matches
+    where matches.source_parish_name = legacy.source_parish_name
   )
 ),
 suggestions as (
@@ -640,7 +750,13 @@ select
   suggested_parish_name,
   similarity_score
 from suggestions
-on conflict (source_parish_name, source_label) do nothing;
+on conflict (source_parish_name, source_label) do update
+set paid_amount = excluded.paid_amount,
+    balance_amount = excluded.balance_amount,
+    suggested_parish_id = excluded.suggested_parish_id,
+    suggested_parish_name = excluded.suggested_parish_name,
+    similarity_score = excluded.similarity_score,
+    review_status = 'needs_review';
 
 -- ----------------------------------------------------------------------------
 -- 6. Indexes
