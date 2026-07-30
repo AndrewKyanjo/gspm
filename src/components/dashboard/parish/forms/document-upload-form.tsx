@@ -41,6 +41,7 @@ export function DocumentUploadForm() {
         <input
           type="file"
           name="file"
+          accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png"
           className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface"
         />
       </label>

@@ -13,6 +13,28 @@ export async function getParishDocumentSummary(): Promise<ParishDocumentSummary>
 
 export async function getParishDocuments(parishId: string): Promise<ParishDocumentItem[]> {
   const supabase = createAdminClient();
+  const { data: rows } = await supabase
+    .from("parish_documents")
+    .select("title, category, storage_path, created_at, detected_modified_at, document_metadata")
+    .eq("parish_id", parishId)
+    .eq("is_archived", false)
+    .order("created_at", { ascending: false });
+
+  if (rows?.length) {
+    return rows.map((row) => {
+      const metadata = (row.document_metadata ?? {}) as { fileSize?: number; size?: number };
+      const path = String(row.storage_path ?? "");
+      return {
+        name: String(row.title ?? path.split("/").pop() ?? "Document"),
+        path,
+        category: String(row.category ?? "general"),
+        size: Number(metadata.fileSize ?? metadata.size) || null,
+        updatedAt: row.detected_modified_at ?? row.created_at ?? null,
+        downloadUrl: null,
+      };
+    });
+  }
+
   const basePrefix = `parishes/${parishId}`;
   const categories = ["general", "minutes", "bulletins", "policies", "reports"];
 

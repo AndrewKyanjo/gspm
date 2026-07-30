@@ -128,8 +128,8 @@ export function DocumentUploadForm({ archdioceseId, userId, vicariates, deanerie
 
       <div className="space-y-1">
         <label htmlFor="file" className="text-sm font-medium text-on-surface block">File</label>
-        <input id="file" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required className="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-on-primary hover:file:bg-primary-container" />
-        <p className="text-xs text-on-surface-variant mt-1">Max 20 MB. PDF, DOCX, XLSX, and images supported.</p>
+        <input id="file" type="file" accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required className="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-on-primary hover:file:bg-primary-container" />
+        <p className="text-xs text-on-surface-variant mt-1">Max 20 MB. PDF, DOCX, XLSX, PPTX, text, and images supported.</p>
       </div>
 
       <div className="flex gap-3">

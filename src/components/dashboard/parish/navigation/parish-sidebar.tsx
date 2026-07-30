@@ -3,8 +3,10 @@ import {
   FileText,
   FolderKanban,
   HandCoins,
+  HeartHandshake,
   House,
   Image,
+  MapPin,
   MessageSquareText,
   Settings,
 } from "lucide-react";
@@ -14,6 +16,8 @@ import type { AppRole } from "@/types/auth";
 const parishNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/parish", label: "Overview", icon: House },
   { href: "/dashboard/parish/reports", label: "Reports", icon: BarChart3 },
+  { href: "/dashboard/parish/akabondo", label: "Akabondo", icon: MapPin },
+  { href: "/dashboard/parish/needs", label: "Needs", icon: HeartHandshake },
   { href: "/dashboard/parish/contributions", label: "Contributions", icon: HandCoins },
   { href: "/dashboard/parish/documents", label: "Documents", icon: FileText },
   { href: "/dashboard/parish/media", label: "Media", icon: Image },

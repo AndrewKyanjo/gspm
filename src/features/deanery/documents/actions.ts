@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuth } from "@/lib/auth/requireAuth";
+import { extractDocumentPreview } from "@/lib/documents/metadata";
 
 export type DeaneryDocumentUploadState = {
   error: string | null;
@@ -53,9 +54,16 @@ export async function uploadDeaneryDocument(
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = `deaneries/${context.deaneryId}/${category}/${Date.now()}-${safeName}`;
 
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const preview = await extractDocumentPreview({
+    bytes,
+    fileName: file.name,
+    mimeType: file.type || "application/octet-stream",
+  });
+
   const { error: uploadError } = await supabase.storage
     .from(DEANERY_DOCUMENT_BUCKET)
-    .upload(path, file, {
+    .upload(path, bytes, {
       contentType: file.type || "application/octet-stream",
       upsert: false,
     });
@@ -79,12 +87,23 @@ export async function uploadDeaneryDocument(
     : 1;
 
   const { error: insertError } = await supabase.from("deanery_documents").insert({
+    archdiocese_id: context.archdioceseId,
+    vicariate_id: context.vicariateId,
     deanery_id: context.deaneryId,
     title,
     category,
     description,
     version_number: nextVersion,
     file_path: path,
+    storage_path: path,
+    document_metadata: {
+      ...preview.metadata,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type || "application/octet-stream",
+    },
+    detected_created_at: preview.metadata.createdAt ?? null,
+    detected_modified_at: preview.metadata.modifiedAt ?? null,
     uploaded_by: context.userId,
     is_archived: false,
   });

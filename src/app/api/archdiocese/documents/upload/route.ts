@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { extractDocumentPreview } from "@/lib/documents/metadata";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,11 +39,17 @@ export async function POST(request: NextRequest) {
     const storagePath = `archdiocese/${archdioceseId}/deanery/${deaneryId}/${Date.now()}-${safeName}`;
 
     const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    const preview = await extractDocumentPreview({
+      bytes,
+      fileName: file.name,
+      mimeType: file.type || "application/octet-stream",
+    });
 
     // Upload to storage bucket
     const { error: uploadError } = await adminClient.storage
       .from("deanery-documents")
-      .upload(storagePath, new Uint8Array(arrayBuffer), {
+      .upload(storagePath, bytes, {
         contentType: file.type,
         upsert: false,
       });
@@ -69,6 +76,15 @@ export async function POST(request: NextRequest) {
         category: category || "general",
         description: description?.trim() || null,
         storage_path: storagePath,
+        file_path: storagePath,
+        document_metadata: {
+          ...preview.metadata,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type || "application/octet-stream",
+        },
+        detected_created_at: preview.metadata.createdAt ?? null,
+        detected_modified_at: preview.metadata.modifiedAt ?? null,
         version_number: 1,
         replaces_document_id: null,
       });

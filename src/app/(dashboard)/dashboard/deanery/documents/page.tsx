@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
 import { Button } from "@/components/ui/button";
 import { getDeaneryDocuments } from "@/features/deanery/documents/queries";
 import { setDeaneryDocumentArchived } from "@/features/deanery/documents/actions";
@@ -59,10 +60,12 @@ export default async function DeaneryDocumentsPage({ searchParams }: DeaneryDocu
               header: "Actions",
               cell: (document) => (
                 <div className="flex flex-wrap gap-2">
-                  {document.downloadUrl ? (
-                    <Button href={document.downloadUrl} size="sm" variant="secondary" target="_blank" rel="noreferrer">
-                      Download
-                    </Button>
+                  {document.path ? (
+                    <DocumentPreviewButton
+                      bucket="deanery-documents"
+                      path={document.path}
+                      title={document.title}
+                    />
                   ) : null}
                   <form action={setDeaneryDocumentArchived}>
                     <input type="hidden" name="documentId" value={document.id} />

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { ParishShell } from "@/components/dashboard/parish/shared/parish-shell";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
 import { Button } from "@/components/ui/button";
 import { getParishDocuments } from "@/features/parish/documents/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
@@ -78,15 +79,11 @@ export default async function ParishDocumentsPage() {
               cell: (document) => (document.updatedAt ? new Date(document.updatedAt).toLocaleDateString() : "-"),
             },
             {
-              header: "Open",
+              header: "Preview",
               cell: (document) =>
-                document.downloadUrl ? (
-                  <Button href={document.downloadUrl} target="_blank" rel="noreferrer" variant="secondary" size="sm">
-                    View file
-                  </Button>
-                ) : (
-                  "Unavailable"
-                ),
+                document.path ? (
+                  <DocumentPreviewButton bucket="parish-documents" path={document.path} title={document.name} />
+                ) : "Unavailable",
             },
           ]}
         />
