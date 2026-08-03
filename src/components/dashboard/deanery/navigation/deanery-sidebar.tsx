@@ -15,9 +15,38 @@ import type { AppRole } from "@/types/auth";
 const deaneryNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/deanery/dashboard", label: "Overview", icon: House },
   { href: "/dashboard/deanery/parishes", label: "Parishes", icon: Landmark },
-  { href: "/dashboard/deanery/contributions", label: "Contributions", icon: HandCoins },
-  { href: "/dashboard/deanery/reports", label: "Reports", icon: BarChart3 },
-  { href: "/dashboard/deanery/documents", label: "Documents", icon: FileText },
+  {
+    label: "Finance",
+    icon: HandCoins,
+    children: [
+      {
+        href: "/dashboard/deanery/finance/contributions",
+        label: "Contributions",
+        icon: HandCoins,
+        aliases: ["/dashboard/deanery/contributions"],
+      },
+      { href: "/dashboard/deanery/finance/project-spending", label: "Project spending", icon: FolderKanban },
+      { href: "/dashboard/deanery/finance/reports", label: "Financial reports", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Documentation",
+    icon: FileText,
+    children: [
+      {
+        href: "/dashboard/deanery/documentation/reports",
+        label: "Reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/deanery/reports"],
+      },
+      {
+        href: "/dashboard/deanery/documentation/documents",
+        label: "Documents",
+        icon: FileText,
+        aliases: ["/dashboard/deanery/documents"],
+      },
+    ],
+  },
   { href: "/dashboard/deanery/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/deanery/media", label: "Media", icon: Image },
   { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
