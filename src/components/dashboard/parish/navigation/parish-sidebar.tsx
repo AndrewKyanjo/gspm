@@ -1,4 +1,5 @@
 import {
+  ArchiveRestore,
   BarChart3,
   FileText,
   FolderKanban,
@@ -15,11 +16,46 @@ import type { AppRole } from "@/types/auth";
 
 const parishNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/parish", label: "Overview", icon: House },
-  { href: "/dashboard/parish/reports", label: "Reports", icon: BarChart3 },
   { href: "/dashboard/parish/akabondo", label: "Akabondo", icon: MapPin },
   { href: "/dashboard/parish/needs", label: "Needs", icon: HeartHandshake },
-  { href: "/dashboard/parish/contributions", label: "Contributions", icon: HandCoins },
-  { href: "/dashboard/parish/documents", label: "Documents", icon: FileText },
+  {
+    label: "Finance",
+    icon: HandCoins,
+    children: [
+      {
+        href: "/dashboard/parish/finance/contributions",
+        label: "Contributions",
+        icon: HandCoins,
+        aliases: ["/dashboard/parish/contributions"],
+      },
+      { href: "/dashboard/parish/finance/project-spending", label: "Project spending", icon: FolderKanban },
+      {
+        href: "/dashboard/parish/finance/reports",
+        label: "Financial reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/parish/contributions/report"],
+      },
+    ],
+  },
+  {
+    label: "Documentation",
+    icon: FileText,
+    children: [
+      {
+        href: "/dashboard/parish/documentation/reports",
+        label: "Reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/parish/reports"],
+      },
+      {
+        href: "/dashboard/parish/documentation/documents",
+        label: "Documents",
+        icon: FileText,
+        aliases: ["/dashboard/parish/documents"],
+      },
+      { href: "/dashboard/parish/documentation/past-import", label: "Past import", icon: ArchiveRestore },
+    ],
+  },
   { href: "/dashboard/parish/media", label: "Media", icon: Image },
   { href: "/dashboard/parish/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
