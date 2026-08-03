@@ -12,11 +12,9 @@ export const IMPORTABLE_DOCUMENT_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/plain",
-  "image/jpeg",
-  "image/png",
 ] as const;
 
-export const IMPORTABLE_EXTENSIONS = [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".jpg", ".jpeg", ".png"] as const;
+export const IMPORTABLE_EXTENSIONS = [".pdf", ".docx", ".xlsx", ".pptx", ".txt"] as const;
 
 export type PastDocumentScopeLevel = "archdiocese" | "vicariate" | "deanery" | "parish" | "unknown";
 
