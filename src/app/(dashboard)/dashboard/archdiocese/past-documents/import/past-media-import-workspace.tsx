@@ -2,16 +2,15 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, FileSearch, RefreshCw, Upload, X } from "lucide-react";
-import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
+import { Check, ImageIcon, RefreshCw, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  publishSelectedPastDocumentImports,
-  rejectPastDocumentImport,
-  scanPastDocumentImportAction,
-  updatePastDocumentImportReview,
-} from "@/features/archdiocese/past-documents/actions";
-import type { PastDocumentImportItem, PastDocumentScopeLevel } from "@/features/archdiocese/past-documents/types";
+  publishSelectedPastMediaImports,
+  rejectPastMediaImport,
+  scanPastMediaImportAction,
+  updatePastMediaImportReview,
+} from "@/features/archdiocese/past-media/actions";
+import type { PastMediaImportItem, PastMediaScopeLevel } from "@/features/archdiocese/past-media/types";
 import { cn } from "@/lib/utils";
 
 type HierarchyOption = {
@@ -23,13 +22,13 @@ type HierarchyOption = {
 };
 
 type Props = {
-  documents: PastDocumentImportItem[];
+  media: PastMediaImportItem[];
   vicariates: HierarchyOption[];
   deaneries: HierarchyOption[];
   parishes: HierarchyOption[];
 };
 
-const scopeOptions: Array<{ value: PastDocumentScopeLevel; label: string }> = [
+const scopeOptions: Array<{ value: PastMediaScopeLevel; label: string }> = [
   { value: "archdiocese", label: "Archdiocese" },
   { value: "vicariate", label: "Vicariate" },
   { value: "deanery", label: "Deanery" },
@@ -37,15 +36,7 @@ const scopeOptions: Array<{ value: PastDocumentScopeLevel; label: string }> = [
   { value: "unknown", label: "Needs review" },
 ];
 
-const categories = [
-  "general",
-  "report",
-  "policy",
-  "minutes",
-  "budget",
-  "correspondence",
-  "other",
-];
+const categories = ["general", "event", "outreach", "meeting", "project", "people", "other"];
 
 const statusClasses: Record<string, string> = {
   uploaded: "border-outline-variant bg-surface-container-lowest text-on-surface-variant",
@@ -68,7 +59,7 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function scopeLabel(item: PastDocumentImportItem) {
+function scopeLabel(item: PastMediaImportItem) {
   if (item.scope_level === "parish") return item.parishName ?? "Parish";
   if (item.scope_level === "deanery") return item.deaneryName ?? "Deanery";
   if (item.scope_level === "vicariate") return item.vicariateName ?? "Vicariate";
@@ -76,7 +67,7 @@ function scopeLabel(item: PastDocumentImportItem) {
   return "Needs review";
 }
 
-export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, parishes }: Props) {
+export function PastMediaImportWorkspace({ media, vicariates, deaneries, parishes }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -85,14 +76,12 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
   const [error, setError] = useState<string | null>(null);
 
   const readyIds = useMemo(
-    () => new Set(documents.filter((item) => item.review_status === "ready_for_upload").map((item) => item.id)),
-    [documents],
+    () => new Set(media.filter((item) => item.review_status === "ready_for_upload").map((item) => item.id)),
+    [media],
   );
 
   function toggleSelected(id: string) {
-    setSelectedIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    );
+    setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
   }
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
@@ -102,7 +91,7 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
 
     const files = Array.from(fileInputRef.current?.files ?? []);
     if (files.length === 0) {
-      setError("Choose at least one document.");
+      setError("Choose at least one image.");
       return;
     }
 
@@ -111,7 +100,7 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
     setUploading(true);
 
     try {
-      const response = await fetch("/api/archdiocese/past-documents/import", {
+      const response = await fetch("/api/archdiocese/past-media/import", {
         method: "POST",
         body: formData,
       });
@@ -120,21 +109,17 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
         results?: Array<{ status: string }>;
       };
 
-      if (!response.ok) {
-        throw new Error(body.error ?? "Import failed.");
-      }
+      if (!response.ok) throw new Error(body.error ?? "Import failed.");
 
       const scanned = body.results?.filter((item) => item.status === "scanned").length ?? 0;
       const needsReview = body.results?.filter((item) => item.status === "needs_review").length ?? 0;
       const failed = body.results?.filter((item) => item.status === "failed").length ?? 0;
       setMessage(
-        `Imported ${scanned + needsReview} document${scanned + needsReview === 1 ? "" : "s"}${
+        `Imported ${scanned + needsReview} image${scanned + needsReview === 1 ? "" : "s"}${
           needsReview ? `, ${needsReview} need review` : ""
         }${failed ? `, ${failed} failed` : ""}.`,
       );
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
       router.refresh();
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Import failed.");
@@ -148,21 +133,21 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
       <section className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
         <form onSubmit={handleUpload} className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div className="space-y-2">
-            <label htmlFor="documents" className="block text-sm font-medium text-on-surface">
-              Bulk document import
+            <label htmlFor="media-files" className="block text-sm font-medium text-on-surface">
+              Bulk media import
             </label>
             <input
-              id="documents"
+              id="media-files"
               ref={fileInputRef}
               type="file"
               multiple
-              accept=".pdf,.docx,.xlsx,.pptx,.txt"
+              accept=".jpg,.jpeg,.png,.webp,.avif"
               className="w-full text-sm text-on-surface file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-on-primary hover:file:bg-primary-container"
             />
           </div>
           <Button type="submit" disabled={uploading}>
             <Upload className="h-4 w-4" />
-            {uploading ? "Importing" : "Import files"}
+            {uploading ? "Importing" : "Import images"}
           </Button>
         </form>
         {message ? <p className="mt-3 text-sm text-primary">{message}</p> : null}
@@ -170,12 +155,12 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
       </section>
 
       <section className="rounded-lg border border-outline-variant bg-surface p-4">
-        <form action={publishSelectedPastDocumentImports} className="flex flex-wrap items-center justify-between gap-3">
+        <form action={publishSelectedPastMediaImports} className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-on-surface">Staging area</h2>
+            <h2 className="text-base font-semibold text-on-surface">Media staging area</h2>
             <p className="text-sm text-on-surface-variant">
-              {documents.length} staged, {readyIds.size} ready,{" "}
-              {documents.filter((item) => item.review_status === "published").length} published
+              {media.length} staged, {readyIds.size} ready,{" "}
+              {media.filter((item) => item.review_status === "published").length} published
             </p>
           </div>
           {selectedIds.map((id) => (
@@ -189,15 +174,26 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
       </section>
 
       <div className="space-y-4">
-        {documents.length === 0 ? (
+        {media.length === 0 ? (
           <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center">
-            <FileSearch className="mx-auto h-8 w-8 text-on-surface-variant" />
-            <h2 className="mt-3 text-base font-semibold text-on-surface">No staged documents</h2>
+            <ImageIcon className="mx-auto h-8 w-8 text-on-surface-variant" />
+            <h2 className="mt-3 text-base font-semibold text-on-surface">No staged media</h2>
           </div>
         ) : (
-          documents.map((item) => (
+          media.map((item) => (
             <article key={item.id} className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="grid gap-4 lg:grid-cols-[11rem_minmax(0,1fr)_auto] lg:items-start">
+                <div className="overflow-hidden rounded-md border border-outline-variant bg-surface">
+                  {item.downloadUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.downloadUrl} alt={item.title ?? item.original_filename} className="aspect-[4/3] w-full object-cover" />
+                  ) : (
+                    <div className="flex aspect-[4/3] items-center justify-center text-sm text-on-surface-variant">
+                      Preview unavailable
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex min-w-0 gap-3">
                   <input
                     type="checkbox"
@@ -229,30 +225,24 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                       <span>{formatBytes(Number(item.file_size ?? 0))}</span>
                       <span>{scopeLabel(item)}</span>
                       <span>{item.category || "general"}</span>
+                      <span>{item.captured_on ?? "Capture date needed"}</span>
                       {typeof item.ai_confidence === "number" ? (
                         <span>{Math.round(item.ai_confidence * 100)}% confidence</span>
                       ) : null}
                     </div>
-                    {item.error_message ? (
-                      <p className="text-sm text-error">{item.error_message}</p>
-                    ) : null}
+                    {item.error_message ? <p className="text-sm text-error">{item.error_message}</p> : null}
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <DocumentPreviewButton
-                    bucket="past-document-imports"
-                    path={item.staging_storage_path}
-                    title={item.title}
-                  />
-                  <form action={scanPastDocumentImportAction}>
+                  <form action={scanPastMediaImportAction}>
                     <input type="hidden" name="importId" value={item.id} />
                     <Button type="submit" variant="secondary" size="sm">
                       <RefreshCw className="h-4 w-4" />
                       Scan
                     </Button>
                   </form>
-                  <form action={rejectPastDocumentImport}>
+                  <form action={rejectPastMediaImport}>
                     <input type="hidden" name="importId" value={item.id} />
                     <Button type="submit" variant="ghost" size="sm" disabled={item.review_status === "published"}>
                       <X className="h-4 w-4" />
@@ -263,25 +253,17 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
               </div>
 
               <details className="mt-4 rounded-md border border-outline-variant bg-surface p-4">
-                <summary className="cursor-pointer text-sm font-medium text-on-surface">Review metadata</summary>
-                <form action={updatePastDocumentImportReview} className="mt-4 grid gap-4">
+                <summary className="cursor-pointer text-sm font-medium text-on-surface">Review media metadata</summary>
+                <form action={updatePastMediaImportReview} className="mt-4 grid gap-4">
                   <input type="hidden" name="importId" value={item.id} />
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Title</span>
-                      <input
-                        name="title"
-                        defaultValue={item.title ?? ""}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      />
+                      <input name="title" defaultValue={item.title ?? ""} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm" />
                     </label>
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Category</span>
-                      <select
-                        name="category"
-                        defaultValue={item.category ?? "general"}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      >
+                      <select name="category" defaultValue={item.category ?? "general"} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm">
                         {categories.map((category) => (
                           <option key={category} value={category}>
                             {category}
@@ -289,26 +271,21 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                         ))}
                       </select>
                     </label>
+                    <label className="space-y-1 text-sm font-medium text-on-surface">
+                      <span>Captured on</span>
+                      <input type="date" name="capturedOn" defaultValue={item.captured_on ?? item.detected_taken_at?.slice(0, 10) ?? ""} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm" />
+                    </label>
                   </div>
 
                   <label className="space-y-1 text-sm font-medium text-on-surface">
                     <span>Description</span>
-                    <textarea
-                      name="description"
-                      defaultValue={item.description ?? ""}
-                      rows={3}
-                      className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                    />
+                    <textarea name="description" defaultValue={item.description ?? ""} rows={3} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm" />
                   </label>
 
                   <div className="grid gap-4 md:grid-cols-4">
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Scope</span>
-                      <select
-                        name="scopeLevel"
-                        defaultValue={item.scope_level}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      >
+                      <select name="scopeLevel" defaultValue={item.scope_level} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm">
                         {scopeOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
@@ -318,11 +295,7 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                     </label>
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Vicariate</span>
-                      <select
-                        name="vicariateId"
-                        defaultValue={item.vicariate_id ?? ""}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      >
+                      <select name="vicariateId" defaultValue={item.vicariate_id ?? ""} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm">
                         <option value="">None</option>
                         {vicariates.map((vicariate) => (
                           <option key={vicariate.id} value={vicariate.id}>
@@ -333,11 +306,7 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                     </label>
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Deanery</span>
-                      <select
-                        name="deaneryId"
-                        defaultValue={item.deanery_id ?? ""}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      >
+                      <select name="deaneryId" defaultValue={item.deanery_id ?? ""} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm">
                         <option value="">None</option>
                         {deaneries.map((deanery) => (
                           <option key={deanery.id} value={deanery.id}>
@@ -348,11 +317,7 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                     </label>
                     <label className="space-y-1 text-sm font-medium text-on-surface">
                       <span>Parish</span>
-                      <select
-                        name="parishId"
-                        defaultValue={item.parish_id ?? ""}
-                        className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm"
-                      >
+                      <select name="parishId" defaultValue={item.parish_id ?? ""} className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2 text-sm">
                         <option value="">None</option>
                         {parishes.map((parish) => (
                           <option key={parish.id} value={parish.id}>
@@ -362,6 +327,12 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                       </select>
                     </label>
                   </div>
+
+                  {item.detected_taken_at ? (
+                    <p className="rounded-md bg-surface-container p-3 text-xs text-on-surface-variant">
+                      Detected image date: {new Date(item.detected_taken_at).toLocaleDateString()}
+                    </p>
+                  ) : null}
 
                   {item.ai_reasoning ? (
                     <p className="rounded-md bg-surface-container p-3 text-xs text-on-surface-variant">
