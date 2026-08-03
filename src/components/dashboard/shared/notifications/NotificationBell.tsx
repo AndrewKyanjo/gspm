@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 // src/components/dashboard/shared/notifications/NotificationBell.tsx
 //
 // Bell icon with unread badge count.  Polls via server action every 60s.

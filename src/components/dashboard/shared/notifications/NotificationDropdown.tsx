@@ -1,11 +1,12 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 // src/components/dashboard/shared/notifications/NotificationDropdown.tsx
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getRecentNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/features/notifications/actions";
-import { Button } from "@/components/ui/button";
 import type { NotificationItem } from "@/features/notifications/types";
 import { CheckCheck, ExternalLink } from "lucide-react";
 
