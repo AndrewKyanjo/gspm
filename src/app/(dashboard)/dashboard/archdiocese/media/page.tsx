@@ -15,11 +15,29 @@ type MediaItem = {
   parishName: string | null;
   deaneryName: string | null;
   storagePath: string;
+  previewUrl: string | null;
+  capturedOn: string | null;
   createdAt: string;
 };
 
+function bucketForScope(scopeLevel: string) {
+  if (scopeLevel === "archdiocese") return "archdiocese-media";
+  if (scopeLevel === "vicariate") return "vicariate-media";
+  if (scopeLevel === "deanery") return "deanery-media";
+  return "parish-media";
+}
+
 async function getArchdioceseMedia(archdioceseId: string): Promise<MediaItem[]> {
   const supabase = createAdminClient();
+
+  const { data: importedMedia } = await supabase
+    .from("past_media_imports")
+    .select("id, title, description, scope_level, parish_id, deanery_id, final_storage_path, captured_on, created_at")
+    .eq("archdiocese_id", archdioceseId)
+    .eq("review_status", "published")
+    .not("final_storage_path", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(80);
 
   // Query parish projects with cover images as a source of media
   const { data: projects } = await supabase
@@ -30,31 +48,71 @@ async function getArchdioceseMedia(archdioceseId: string): Promise<MediaItem[]> 
     .order("created_at", { ascending: false })
     .limit(30);
 
-  if (!projects?.length) return [];
+  const importedRows = importedMedia ?? [];
+  const projectRows = projects ?? [];
 
-  const parishIds = [...new Set(projects.map((p) => p.parish_id).filter(Boolean))];
+  const parishIds = [
+    ...new Set([
+      ...importedRows.map((item) => item.parish_id).filter(Boolean),
+      ...projectRows.map((p) => p.parish_id).filter(Boolean),
+    ]),
+  ];
   const { data: parishes } = parishIds.length
     ? await supabase.from("parishes").select("id, name, deanery_id").in("id", parishIds)
     : { data: [] };
 
   const parishMap = new Map((parishes ?? []).map((p) => [p.id, p]));
-  const deaneryIds = [...new Set((parishes ?? []).map((p) => p.deanery_id).filter(Boolean))];
+  const deaneryIds = [
+    ...new Set([
+      ...importedRows.map((item) => item.deanery_id).filter(Boolean),
+      ...(parishes ?? []).map((p) => p.deanery_id).filter(Boolean),
+    ]),
+  ];
   const { data: deaneries } = deaneryIds.length
     ? await supabase.from("deaneries").select("id, name").in("id", deaneryIds)
     : { data: [] };
   const deaneryMap = new Map((deaneries ?? []).map((d) => [d.id, d.name]));
 
-  return projects.map((p) => ({
+  const importedItems = await Promise.all(
+    importedRows.map(async (item) => {
+      const storagePath = String(item.final_storage_path);
+      const { data: signedUrl } = await supabase.storage
+        .from(bucketForScope(String(item.scope_level)))
+        .createSignedUrl(storagePath, 60 * 15);
+
+      return {
+        id: item.id,
+        title: item.title ?? "Imported media",
+        description: item.description ?? null,
+        parishName: item.parish_id ? parishMap.get(item.parish_id)?.name ?? null : null,
+        deaneryName: item.deanery_id
+          ? deaneryMap.get(item.deanery_id) ?? null
+          : item.parish_id
+            ? deaneryMap.get(parishMap.get(item.parish_id)?.deanery_id ?? "") ?? null
+            : null,
+        storagePath,
+        previewUrl: signedUrl?.signedUrl ?? null,
+        capturedOn: item.captured_on ?? null,
+        createdAt: item.created_at,
+      } satisfies MediaItem;
+    }),
+  );
+
+  const projectItems = projectRows.map((p) => ({
     id: p.id,
     title: p.title,
     description: p.description ?? null,
     parishName: parishMap.get(p.parish_id)?.name ?? null,
-    deaneryName: p.parish_id
-      ? deaneryMap.get(parishMap.get(p.parish_id)?.deanery_id ?? "") ?? null
-      : null,
+    deaneryName: p.parish_id ? deaneryMap.get(parishMap.get(p.parish_id)?.deanery_id ?? "") ?? null : null,
     storagePath: p.cover_image_path,
+    previewUrl: p.cover_image_path,
+    capturedOn: null,
     createdAt: p.created_at,
   }));
+
+  return [...importedItems, ...projectItems].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 export default async function ArchdioceseMediaPage() {
@@ -111,7 +169,7 @@ export default async function ArchdioceseMediaPage() {
             >
               <div className="aspect-[4/3] bg-surface-container flex items-center justify-center overflow-hidden">
                 <img
-                  src={item.storagePath}
+                  src={item.previewUrl ?? item.storagePath}
                   alt={item.title}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -132,8 +190,10 @@ export default async function ArchdioceseMediaPage() {
                   {item.deaneryName ? ` • ${item.deaneryName}` : ""}
                 </p>
                 <p className="text-xs text-outline mt-2">
-                  {item.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString()
+                  {item.capturedOn
+                    ? new Date(item.capturedOn).toLocaleDateString()
+                    : item.createdAt
+                      ? new Date(item.createdAt).toLocaleDateString()
                     : ""}
                 </p>
               </div>
