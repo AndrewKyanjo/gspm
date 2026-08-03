@@ -19,15 +19,60 @@ import type { AppRole } from "@/types/auth";
 
 const ALL_ARCHDIOCESE_NAV_ITEMS: DashboardNavigationItem[] = [
   { href: "/dashboard/archdiocese/dashboard", label: "Overview", icon: House },
-  { href: "/dashboard/archdiocese/vicariates", label: "Vicariates", icon: Building2 },
-  { href: "/dashboard/archdiocese/deaneries", label: "Deaneries", icon: Landmark },
-  { href: "/dashboard/archdiocese/parishes", label: "Parishes", icon: ShieldCheck },
+  {
+    label: "Hierarchy",
+    icon: Building2,
+    children: [
+      { href: "/dashboard/archdiocese/vicariates", label: "Vicariates", icon: Building2 },
+      { href: "/dashboard/archdiocese/deaneries", label: "Deaneries", icon: Landmark },
+      { href: "/dashboard/archdiocese/parishes", label: "Parishes", icon: ShieldCheck },
+    ],
+  },
   { href: "/dashboard/archdiocese/akabondo", label: "Akabondo", icon: HeartHandshake },
-  { href: "/dashboard/archdiocese/contributions", label: "Contributions", icon: HandCoins },
-  { href: "/dashboard/archdiocese/reports", label: "Reports", icon: BarChart3 },
+  {
+    label: "Finance",
+    icon: HandCoins,
+    children: [
+      {
+        href: "/dashboard/archdiocese/finance/contributions",
+        label: "Contributions",
+        icon: HandCoins,
+        aliases: ["/dashboard/archdiocese/contributions"],
+      },
+      { href: "/dashboard/archdiocese/finance/project-spending", label: "Project spending", icon: FolderKanban },
+      {
+        href: "/dashboard/archdiocese/finance/reports",
+        label: "Financial reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/archdiocese/reports/financial"],
+      },
+    ],
+  },
   { href: "/dashboard/archdiocese/projects", label: "Projects", icon: FolderKanban },
-  { href: "/dashboard/archdiocese/documents", label: "Documents", icon: FileText },
-  { href: "/dashboard/archdiocese/past-documents/import", label: "Past Import", icon: ArchiveRestore },
+  {
+    label: "Documentation",
+    icon: FileText,
+    children: [
+      {
+        href: "/dashboard/archdiocese/documentation/reports",
+        label: "Reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/archdiocese/reports"],
+      },
+      {
+        href: "/dashboard/archdiocese/documentation/documents",
+        label: "Documents",
+        icon: FileText,
+        aliases: ["/dashboard/archdiocese/documents"],
+      },
+      {
+        href: "/dashboard/archdiocese/documentation/past-import",
+        label: "Past import",
+        icon: ArchiveRestore,
+        aliases: ["/dashboard/archdiocese/past-documents/import"],
+      },
+    ],
+  },
   { href: "/dashboard/archdiocese/media", label: "Media", icon: Image },
   { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
   { href: "/dashboard/archdiocese/users", label: "Users", icon: Users },
