@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { InteractiveTableShell } from "@/components/dashboard/tables/interactive-table-shell";
 
 type Column<T> = {
   header: string;
@@ -18,6 +19,8 @@ export function SimpleTable<T>({
   columns: Column<T>[];
   rows: T[];
 }) {
+  const tableId = useId();
+
   return (
     <Card>
       <CardHeader>
@@ -25,30 +28,32 @@ export function SimpleTable<T>({
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-outline-variant text-xs uppercase tracking-wide text-on-surface-variant">
-                {columns.map((column) => (
-                  <th key={column.header} className={`px-3 py-3 font-semibold ${column.className ?? ""}`}>
-                    {column.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="border-b border-outline-variant/70 last:border-b-0">
+        <InteractiveTableShell tableId={tableId} rowCount={rows.length} title={title}>
+          <div className="overflow-x-auto">
+            <table id={tableId} className="min-w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-outline-variant text-xs uppercase tracking-wide text-on-surface-variant">
                   {columns.map((column) => (
-                    <td key={column.header} className={`px-3 py-3 align-top text-on-surface ${column.className ?? ""}`}>
-                      {column.cell(row)}
-                    </td>
+                    <th key={column.header} className={`px-3 py-3 font-semibold ${column.className ?? ""}`}>
+                      {column.header}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr key={rowIndex} data-table-row className="border-b border-outline-variant/70 last:border-b-0">
+                    {columns.map((column) => (
+                      <td key={column.header} className={`px-3 py-3 align-top text-on-surface ${column.className ?? ""}`}>
+                        {column.cell(row)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </InteractiveTableShell>
       </CardContent>
     </Card>
   );
