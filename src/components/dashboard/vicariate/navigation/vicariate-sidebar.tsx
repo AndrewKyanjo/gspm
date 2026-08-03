@@ -15,10 +15,39 @@ import type { AppRole } from "@/types/auth";
 const vicariateNavigation: DashboardNavigationItem[] = [
   { href: "/dashboard/vicariate", label: "Overview", icon: House },
   { href: "/dashboard/vicariate/deaneries", label: "Deaneries", icon: Landmark },
-  { href: "/dashboard/vicariate/contributions", label: "Contributions", icon: HandCoins },
-  { href: "/dashboard/vicariate/reports", label: "Reports", icon: BarChart3 },
+  {
+    label: "Finance",
+    icon: HandCoins,
+    children: [
+      {
+        href: "/dashboard/vicariate/finance/contributions",
+        label: "Contributions",
+        icon: HandCoins,
+        aliases: ["/dashboard/vicariate/contributions"],
+      },
+      { href: "/dashboard/vicariate/finance/project-spending", label: "Project spending", icon: FolderKanban },
+      { href: "/dashboard/vicariate/finance/reports", label: "Financial reports", icon: BarChart3 },
+    ],
+  },
   { href: "/dashboard/vicariate/projects", label: "Projects", icon: FolderKanban },
-  { href: "/dashboard/vicariate/documents", label: "Documents", icon: FileText },
+  {
+    label: "Documentation",
+    icon: FileText,
+    children: [
+      {
+        href: "/dashboard/vicariate/documentation/reports",
+        label: "Reports",
+        icon: BarChart3,
+        aliases: ["/dashboard/vicariate/reports"],
+      },
+      {
+        href: "/dashboard/vicariate/documentation/documents",
+        label: "Documents",
+        icon: FileText,
+        aliases: ["/dashboard/vicariate/documents"],
+      },
+    ],
+  },
   { href: "/dashboard/vicariate/media", label: "Media", icon: Image },
   { href: "/dashboard/feed", label: "Feed", icon: MessageSquareText },
   { href: "/dashboard/vicariate/settings", label: "Settings", icon: Settings },
