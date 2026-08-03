@@ -39,7 +39,7 @@ export async function getDeanerySettingsOverview(
     ),
   ] as string[];
 
-  let roleNameMap = new Map<string, string>();
+  const roleNameMap = new Map<string, string>();
   if (roleIds.length > 0) {
     const { data: roles } = await supabase
       .from("roles")
