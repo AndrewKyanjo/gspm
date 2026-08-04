@@ -104,15 +104,15 @@ function MetricCard({
   return (
     <Card className="overflow-hidden">
       <div className={cn("h-1", accent)} />
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-sm font-medium text-on-surface-variant">{label}</p>
-            <p className="mt-2 text-3xl font-semibold text-on-surface">{value}</p>
-            <p className="mt-2 text-xs text-on-surface-variant">{helper}</p>
+            <p className="mt-1 text-2xl font-semibold text-on-surface">{value}</p>
+            <p className="mt-1 text-xs text-on-surface-variant">{helper}</p>
           </div>
-          <div className="rounded-md bg-surface-container p-2 text-primary">
-            <Icon className="h-5 w-5" />
+          <div className="rounded-md bg-surface-container p-1.5 text-primary">
+            <Icon className="h-4 w-4" />
           </div>
         </div>
       </CardContent>
@@ -124,7 +124,7 @@ function TrendBars({ data }: { data: Array<{ month: string; amount: number }> })
   const recent = data.slice(-9);
   const max = Math.max(...recent.map((item) => item.amount), 1);
   return (
-    <div className="flex h-44 items-end gap-2">
+    <div className="flex h-28 items-end gap-2">
       {recent.length ? (
         recent.map((item) => (
           <div key={item.month} className="flex min-w-0 flex-1 flex-col items-center gap-2">
@@ -205,14 +205,14 @@ function HealthScore({
 }) {
   return (
     <Card>
-      <CardContent className="p-5">
+      <CardContent className="p-3">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-on-surface-variant">Archdiocese health</p>
-            <p className="mt-2 text-3xl font-semibold text-on-surface">{score}%</p>
-            <p className="mt-2 text-xs text-on-surface-variant">{label}</p>
+            <p className="mt-1 text-2xl font-semibold text-on-surface">{score}%</p>
+            <p className="mt-1 text-xs text-on-surface-variant">{label}</p>
           </div>
-          <div className="h-2 w-32 rounded-full bg-surface-container">
+          <div className="h-2 w-24 rounded-full bg-surface-container">
             <div className="h-2 rounded-full bg-emerald-700" style={{ width: `${score}%` }} />
           </div>
         </div>
@@ -295,16 +295,16 @@ export default async function ArchdioceseDashboardPage() {
       userEmail={context.email}
       role={context.role}
     >
-      <section className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-center">
+      <section className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr] xl:items-center">
           <div>
             <p className="text-sm font-medium text-primary">
               {greeting()}, {displayName}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-on-surface">
+            <h1 className="mt-1 text-2xl font-semibold text-on-surface">
               {archdiocese.archdioceseName ?? "Archdiocese Executive Dashboard"}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm text-on-surface-variant">
+            <p className="mt-2 max-w-2xl text-sm text-on-surface-variant">
               {stats.pendingApprovals + stats.submittedReports > 0
                 ? `${stats.pendingApprovals + stats.submittedReports} items need leadership attention today.`
                 : "No urgent approval or report queues are currently visible."}
@@ -331,30 +331,30 @@ export default async function ArchdioceseDashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-12">
+      <section className="grid gap-4 xl:grid-cols-12">
         <Card className="xl:col-span-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-sm font-medium text-on-surface-variant">Annual contributions</p>
-                <p className="mt-4 text-5xl font-semibold text-on-surface">
+                <p className="mt-2 text-3xl font-semibold text-on-surface">
                   {compactCurrency(stats.annualContributions)}
                 </p>
-                <p className="mt-3 text-sm text-on-surface-variant">
-                  {financialSummary.byVicariate[0]
-                    ? `${financialSummary.byVicariate[0].name} is currently the strongest contribution source.`
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  {financialSummary.annualByVicariate[0]
+                    ? `${financialSummary.annualByVicariate[0].name} leads current-year contributions.`
                     : "Contribution totals will appear as parish reports are recorded."}
                 </p>
               </div>
               <Badge variant="info">Finance</Badge>
             </div>
-            <div className="mt-8">
+            <div className="mt-4">
               <TrendBars data={financialSummary.byMonth} />
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 xl:col-span-4">
+        <div className="grid gap-3 xl:col-span-4">
           <HealthScore score={healthScore} label={healthLabel} />
           <MetricCard
             label="Pending approvals"
@@ -366,7 +366,7 @@ export default async function ArchdioceseDashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Reports" value={stats.submittedReports} helper="Awaiting review" icon={ClipboardCheck} accent="bg-blue-600" />
         <MetricCard label="Projects" value={stats.trackedProjects} helper="Visible across parishes" icon={FolderKanban} accent="bg-violet-600" />
         <MetricCard label="Parishes" value={stats.totalParishes} helper="Operating parish units" icon={ShieldCheck} accent="bg-cyan-600" />
