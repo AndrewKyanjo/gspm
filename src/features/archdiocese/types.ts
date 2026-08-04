@@ -284,6 +284,7 @@ export type ReportDetail = {
 export type ArchdioceseFinancialSummary = {
   totalAmount: number;
   byVicariate: Array<{ name: string; amount: number }>;
+  annualByVicariate: Array<{ name: string; amount: number }>;
   byDeanery: Array<{ name: string; amount: number }>;
   byMonth: Array<{ month: string; amount: number }>;
   byContributionType: Array<{ type: string; amount: number }>;

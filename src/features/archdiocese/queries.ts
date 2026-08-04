@@ -489,13 +489,20 @@ export async function getArchdioceseContributionSummary(
       .order("contributed_on", { ascending: false }),
   ]);
 
-  const byVicariateMap = new Map<string, number>();
-  for (const row of contributionsResult.data ?? []) {
-    if (!row.vicariate_id) {
-      continue;
+  function resolveVicariateId(row: { parish_id?: string | null; vicariate_id?: string | null }) {
+    if (row.parish_id) {
+      const parish = maps.parishesById.get(row.parish_id);
+      if (parish?.vicariate_id) return parish.vicariate_id;
     }
 
-    byVicariateMap.set(row.vicariate_id, (byVicariateMap.get(row.vicariate_id) ?? 0) + parseNumeric(row.amount));
+    return row.vicariate_id && maps.vicariatesById.has(row.vicariate_id) ? row.vicariate_id : null;
+  }
+
+  const byVicariateMap = new Map<string, number>();
+  for (const row of contributionsResult.data ?? []) {
+    const vicariateId = resolveVicariateId(row);
+    if (!vicariateId) continue;
+    byVicariateMap.set(vicariateId, (byVicariateMap.get(vicariateId) ?? 0) + parseNumeric(row.amount));
   }
 
   return {
@@ -831,19 +838,56 @@ export async function getArchdioceseFinancialSummary(
   ]);
 
   const rows = contributionsResult.data ?? [];
+  const currentYear = new Date().getUTCFullYear();
+
+  function resolveVicariateId(row: { parish_id?: string | null; deanery_id?: string | null; vicariate_id?: string | null }) {
+    if (row.parish_id) {
+      const parish = maps.parishesById.get(row.parish_id);
+      if (parish?.vicariate_id) return parish.vicariate_id;
+    }
+
+    if (row.deanery_id) {
+      const deanery = maps.deaneriesById.get(row.deanery_id);
+      if (deanery?.vicariate_id) return deanery.vicariate_id;
+    }
+
+    return row.vicariate_id && maps.vicariatesById.has(row.vicariate_id) ? row.vicariate_id : null;
+  }
+
+  function resolveDeaneryId(row: { parish_id?: string | null; deanery_id?: string | null }) {
+    if (row.parish_id) {
+      const parish = maps.parishesById.get(row.parish_id);
+      if (parish?.deanery_id) return parish.deanery_id;
+    }
+
+    return row.deanery_id && maps.deaneriesById.has(row.deanery_id) ? row.deanery_id : null;
+  }
+
+  function isCurrentYear(value: string | null | undefined) {
+    if (!value) return false;
+    const year = new Date(value).getUTCFullYear();
+    return Number.isFinite(year) && year === currentYear;
+  }
 
   // By vicariate
   const byVicariateMap = new Map<string, number>();
+  const annualByVicariateMap = new Map<string, number>();
   for (const row of rows) {
-    if (!row.vicariate_id) continue;
-    byVicariateMap.set(row.vicariate_id, (byVicariateMap.get(row.vicariate_id) ?? 0) + parseNumeric(row.amount));
+    const vicariateId = resolveVicariateId(row);
+    if (!vicariateId) continue;
+    const amount = parseNumeric(row.amount);
+    byVicariateMap.set(vicariateId, (byVicariateMap.get(vicariateId) ?? 0) + amount);
+    if (isCurrentYear(row.contributed_on)) {
+      annualByVicariateMap.set(vicariateId, (annualByVicariateMap.get(vicariateId) ?? 0) + amount);
+    }
   }
 
   // By deanery
   const byDeaneryMap = new Map<string, number>();
   for (const row of rows) {
-    if (!row.deanery_id) continue;
-    byDeaneryMap.set(row.deanery_id, (byDeaneryMap.get(row.deanery_id) ?? 0) + parseNumeric(row.amount));
+    const deaneryId = resolveDeaneryId(row);
+    if (!deaneryId) continue;
+    byDeaneryMap.set(deaneryId, (byDeaneryMap.get(deaneryId) ?? 0) + parseNumeric(row.amount));
   }
 
   // By month
@@ -867,6 +911,9 @@ export async function getArchdioceseFinancialSummary(
     byVicariate: [...byVicariateMap.entries()]
       .map(([id, amount]) => ({ name: maps.vicariatesById.get(id)?.name ?? "Unknown", amount }))
       .sort((a, b) => b.amount - a.amount),
+    annualByVicariate: [...annualByVicariateMap.entries()]
+      .map(([id, amount]) => ({ name: maps.vicariatesById.get(id)?.name ?? "Unknown", amount }))
+      .sort((a, b) => b.amount - a.amount),
     byDeanery: [...byDeaneryMap.entries()]
       .map(([id, amount]) => ({ name: maps.deaneriesById.get(id)?.name ?? "Unknown", amount }))
       .sort((a, b) => b.amount - a.amount),
@@ -880,8 +927,8 @@ export async function getArchdioceseFinancialSummary(
       id: row.id,
       contributorName: row.contributor_name,
       parishName: row.parish_id ? maps.parishesById.get(row.parish_id)?.name ?? null : null,
-      deaneryName: row.deanery_id ? maps.deaneriesById.get(row.deanery_id)?.name ?? null : null,
-      vicariateName: row.vicariate_id ? maps.vicariatesById.get(row.vicariate_id)?.name ?? null : null,
+      deaneryName: resolveDeaneryId(row) ? maps.deaneriesById.get(resolveDeaneryId(row) ?? "")?.name ?? null : null,
+      vicariateName: resolveVicariateId(row) ? maps.vicariatesById.get(resolveVicariateId(row) ?? "")?.name ?? null : null,
       contributionType: row.contribution_type,
       amount: parseNumeric(row.amount),
       currency: row.currency,
