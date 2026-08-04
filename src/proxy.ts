@@ -1,8 +1,8 @@
-// src/middleware.ts
+// src/proxy.ts
 //
-// Per Section 7: "Authentication Middleware only checks for a valid
+// Per Section 7: "Authentication proxy only checks for a valid
 // Supabase session. It does not check approvals or assignments — those
-// are handled inside (dashboard)/layout.tsx. This keeps the middleware
+// are handled inside (dashboard)/layout.tsx. This keeps the proxy
 // lightweight and failure messages more specific."
 
 import { createServerClient } from "@supabase/ssr";
@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/", "/contact"];
 const AUTH_PATHS = ["/login", "/signup", "/verify-email", "/forgot-password", "/auth/callback"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
