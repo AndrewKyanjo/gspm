@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getHierarchyCollections } from "@/lib/db/queries/hierarchy";
 import {
+  clearPastMediaImportStaging,
+  deletePastMediaImport,
   getPastMediaImportPath,
   publishPastMediaImports,
   scanPastMediaImport,
@@ -98,23 +100,17 @@ export async function rejectPastMediaImport(formData: FormData) {
   const importId = formString(formData, "importId");
   if (!importId) return;
 
-  const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("past_media_imports")
-    .update({
-      review_status: "rejected",
-      reviewed_by: context.userId,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", importId)
-    .eq("archdiocese_id", context.archdioceseId)
-    .neq("review_status", "published");
+  await deletePastMediaImport({ importId, context });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  revalidatePath(getPastMediaImportPath());
+  redirect(MEDIA_IMPORT_PATH);
+}
 
+export async function clearPastMediaImportStagingAction() {
+  const context = await requireAuth({ roles: [...ARCHDIOCESE_IMPORT_ROLES] });
+  if (!context.archdioceseId) return;
+
+  await clearPastMediaImportStaging({ context });
   revalidatePath(getPastMediaImportPath());
   redirect(MEDIA_IMPORT_PATH);
 }

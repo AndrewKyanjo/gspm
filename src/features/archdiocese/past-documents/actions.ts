@@ -5,6 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getHierarchyCollections } from "@/lib/db/queries/hierarchy";
 import {
+  clearPastDocumentImportStaging,
+  deletePastDocumentImport,
   getPastDocumentImportPath,
   publishPastDocumentImports,
   scanPastDocumentImport,
@@ -98,19 +100,18 @@ export async function rejectPastDocumentImport(formData: FormData) {
     return;
   }
 
-  const supabase = createAdminClient();
-  await supabase
-    .from("past_document_imports")
-    .update({
-      review_status: "rejected",
-      reviewed_by: context.userId,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", importId)
-    .eq("archdiocese_id", context.archdioceseId)
-    .neq("review_status", "published");
+  await deletePastDocumentImport({ importId, context });
 
+  revalidatePath(getPastDocumentImportPath());
+}
+
+export async function clearPastDocumentImportStagingAction() {
+  const context = await requireAuth({ roles: [...ARCHDIOCESE_IMPORT_ROLES] });
+  if (!context.archdioceseId) {
+    return;
+  }
+
+  await clearPastDocumentImportStaging({ context });
   revalidatePath(getPastDocumentImportPath());
 }
 
