@@ -11,11 +11,18 @@ import { PastImportWorkspace } from "./past-import-workspace";
 
 const ARCHDIOCESE_IMPORT_ROLES = ["super_admin", "archdiocese_admin", "archdiocese_data_entry"] as const;
 
-export default async function PastDocumentImportPage() {
+type PastDocumentImportPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function PastDocumentImportPage({ searchParams }: PastDocumentImportPageProps) {
   const context = await requireAuth({ roles: [...ARCHDIOCESE_IMPORT_ROLES] });
   if (!context.archdioceseId) {
     return null;
   }
+
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const importType = resolvedSearchParams.type === "media" ? "media" : "documents";
 
   const [hierarchy, documents, media] = await Promise.all([
     getHierarchyCollections({ archdioceseId: context.archdioceseId }),
@@ -62,6 +69,7 @@ export default async function PastDocumentImportPage() {
       </section>
 
       <PastImportWorkspace
+        initialMode={importType}
         documents={documents}
         media={media}
         vicariates={hierarchy.vicariates.map((item) => ({

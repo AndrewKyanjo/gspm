@@ -17,6 +17,7 @@ type HierarchyOption = {
 };
 
 type Props = {
+  initialMode: "documents" | "media";
   documents: PastDocumentImportItem[];
   media: PastMediaImportItem[];
   vicariates: HierarchyOption[];
@@ -24,15 +25,22 @@ type Props = {
   parishes: HierarchyOption[];
 };
 
-export function PastImportWorkspace({ documents, media, vicariates, deaneries, parishes }: Props) {
-  const [mode, setMode] = useState<"documents" | "media">("documents");
+export function PastImportWorkspace({ initialMode, documents, media, vicariates, deaneries, parishes }: Props) {
+  const [mode, setMode] = useState<"documents" | "media">(initialMode);
+
+  function chooseMode(nextMode: "documents" | "media") {
+    setMode(nextMode);
+    const url = new URL(window.location.href);
+    url.searchParams.set("type", nextMode);
+    window.history.replaceState(null, "", url.toString());
+  }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest p-2 md:grid-cols-2">
         <button
           type="button"
-          onClick={() => setMode("documents")}
+          onClick={() => chooseMode("documents")}
           className={cn(
             "flex items-center gap-3 rounded-md px-4 py-3 text-left transition-colors",
             mode === "documents" ? "bg-primary text-on-primary" : "text-on-surface hover:bg-surface-container",
@@ -49,7 +57,7 @@ export function PastImportWorkspace({ documents, media, vicariates, deaneries, p
 
         <button
           type="button"
-          onClick={() => setMode("media")}
+          onClick={() => chooseMode("media")}
           className={cn(
             "flex items-center gap-3 rounded-md px-4 py-3 text-left transition-colors",
             mode === "media" ? "bg-primary text-on-primary" : "text-on-surface hover:bg-surface-container",

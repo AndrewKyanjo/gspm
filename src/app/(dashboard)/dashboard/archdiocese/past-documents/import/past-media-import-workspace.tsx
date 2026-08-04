@@ -162,13 +162,16 @@ export function PastMediaImportWorkspace({ media, vicariates, deaneries, parishe
               {media.length} staged, {readyIds.size} ready,{" "}
               {media.filter((item) => item.review_status === "published").length} published
             </p>
+            <p className="mt-1 text-xs text-on-surface-variant">
+              Save review metadata, mark images ready, then select ready images for publishing.
+            </p>
           </div>
           {selectedIds.map((id) => (
             <input key={id} type="hidden" name="importId" value={id} />
           ))}
           <Button type="submit" disabled={selectedIds.length === 0}>
             <Check className="h-4 w-4" />
-            Publish selected
+            Publish selected ready images
           </Button>
         </form>
       </section>
