@@ -34,7 +34,6 @@ export default async function PastDocumentImportPage({ searchParams }: PastDocum
   const pendingCount = documents.filter((item) =>
     ["uploaded", "scanning", "scanned", "needs_review", "failed"].includes(item.review_status),
   ).length;
-  const publishedCount = documents.filter((item) => item.review_status === "published").length;
   const mediaReadyCount = media.filter((item) => item.review_status === "ready_for_upload").length;
   const mediaPendingCount = media.filter((item) =>
     ["uploaded", "scanning", "scanned", "needs_review", "failed"].includes(item.review_status),
@@ -65,7 +64,7 @@ export default async function PastDocumentImportPage({ searchParams }: PastDocum
         <StatCard label="Documents staged" value={documents.length} helper={`${pendingCount} awaiting review`} icon={FileText} />
         <StatCard label="Media staged" value={media.length} helper={`${mediaPendingCount} awaiting review`} icon={Image} />
         <StatCard label="Ready" value={readyCount + mediaReadyCount} helper="Can be published" icon={CheckCircle2} />
-        <StatCard label="Published" value={publishedCount + media.filter((item) => item.review_status === "published").length} helper="Moved to libraries" icon={ArchiveRestore} />
+        <StatCard label="Queued total" value={documents.length + media.length} helper="Temporary staging records" icon={ArchiveRestore} />
       </section>
 
       <PastImportWorkspace
