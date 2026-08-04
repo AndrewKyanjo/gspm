@@ -41,6 +41,10 @@ type PublishResult = {
   errors: string[];
 };
 
+type ClearResult = {
+  deleted: number;
+};
+
 const FINAL_BUCKET_BY_SCOPE: Record<Exclude<PastDocumentScopeLevel, "unknown">, string> = {
   archdiocese: ARCHDIOCESE_DOCUMENT_BUCKET,
   vicariate: VICARIATE_DOCUMENT_BUCKET,
@@ -584,6 +588,7 @@ export async function getPastDocumentImports(archdioceseId: string): Promise<Pas
     .from("past_document_imports")
     .select("*")
     .eq("archdiocese_id", archdioceseId)
+    .neq("review_status", "published")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -617,6 +622,104 @@ export async function getPastDocumentImports(archdioceseId: string): Promise<Pas
       };
     }),
   );
+}
+
+async function removeStagingFiles(paths: string[]) {
+  const uniquePaths = [...new Set(paths.filter(Boolean))];
+  if (uniquePaths.length === 0) return;
+
+  const supabase = createAdminClient();
+  for (let index = 0; index < uniquePaths.length; index += 100) {
+    const chunk = uniquePaths.slice(index, index + 100);
+    const { error } = await supabase.storage.from(PAST_DOCUMENT_IMPORT_BUCKET).remove(chunk);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+}
+
+export async function deletePastDocumentImport({
+  importId,
+  context,
+}: {
+  importId: string;
+  context: AccessContext;
+}): Promise<ClearResult> {
+  if (!context.archdioceseId) {
+    throw new Error("Your account does not have an archdiocese scope.");
+  }
+
+  const supabase = createAdminClient();
+  const { data: row, error: readError } = await supabase
+    .from("past_document_imports")
+    .select("id, staging_storage_path")
+    .eq("id", importId)
+    .eq("archdiocese_id", context.archdioceseId)
+    .neq("review_status", "published")
+    .maybeSingle();
+
+  if (readError) {
+    throw new Error(readError.message);
+  }
+
+  if (!row) {
+    return { deleted: 0 };
+  }
+
+  await removeStagingFiles([String(row.staging_storage_path)]);
+
+  const { error: deleteError } = await supabase
+    .from("past_document_imports")
+    .delete()
+    .eq("id", row.id)
+    .eq("archdiocese_id", context.archdioceseId)
+    .neq("review_status", "published");
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  return { deleted: 1 };
+}
+
+export async function clearPastDocumentImportStaging({
+  context,
+}: {
+  context: AccessContext;
+}): Promise<ClearResult> {
+  if (!context.archdioceseId) {
+    throw new Error("Your account does not have an archdiocese scope.");
+  }
+
+  const supabase = createAdminClient();
+  const { data: rows, error: readError } = await supabase
+    .from("past_document_imports")
+    .select("id, staging_storage_path")
+    .eq("archdiocese_id", context.archdioceseId)
+    .neq("review_status", "published");
+
+  if (readError) {
+    throw new Error(readError.message);
+  }
+
+  const imports = rows ?? [];
+  if (imports.length === 0) {
+    return { deleted: 0 };
+  }
+
+  await removeStagingFiles(imports.map((row) => String(row.staging_storage_path)));
+
+  const { error: deleteError } = await supabase
+    .from("past_document_imports")
+    .delete()
+    .eq("archdiocese_id", context.archdioceseId)
+    .neq("review_status", "published");
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  return { deleted: imports.length };
 }
 
 function validateHierarchyForPublish(row: PastDocumentImportRow, hierarchy: HierarchyCollections) {
@@ -836,6 +939,7 @@ export async function publishPastDocumentImports({
         .eq("id", row.id)
         .eq("archdiocese_id", context.archdioceseId);
 
+      await removeStagingFiles([row.staging_storage_path]).catch(() => undefined);
       published += 1;
     } catch (error) {
       skipped += 1;
