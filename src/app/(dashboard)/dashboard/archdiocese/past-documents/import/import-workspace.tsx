@@ -2,10 +2,11 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, FileSearch, RefreshCw, Upload, X } from "lucide-react";
+import { Check, FileSearch, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
 import { Button } from "@/components/ui/button";
 import {
+  clearPastDocumentImportStagingAction,
   publishSelectedPastDocumentImports,
   rejectPastDocumentImport,
   scanPastDocumentImportAction,
@@ -174,17 +175,30 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
           <div>
             <h2 className="text-base font-semibold text-on-surface">Staging area</h2>
             <p className="text-sm text-on-surface-variant">
-              {documents.length} staged, {readyIds.size} ready,{" "}
-              {documents.filter((item) => item.review_status === "published").length} published
+              {documents.length} staged, {readyIds.size} ready
+            </p>
+            <p className="mt-1 text-xs text-on-surface-variant">
+              Clear removes staging records and temporary files only; published library files remain.
             </p>
           </div>
           {selectedIds.map((id) => (
             <input key={id} type="hidden" name="importId" value={id} />
           ))}
-          <Button type="submit" disabled={selectedIds.length === 0}>
-            <Check className="h-4 w-4" />
-            Publish selected
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={selectedIds.length === 0}>
+              <Check className="h-4 w-4" />
+              Publish selected
+            </Button>
+            <Button
+              type="submit"
+              variant="ghost"
+              disabled={documents.length === 0}
+              formAction={clearPastDocumentImportStagingAction}
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear staging area
+            </Button>
+          </div>
         </form>
       </section>
 
