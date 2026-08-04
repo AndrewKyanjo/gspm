@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { getHierarchyCollections } from "@/lib/db/queries/hierarchy";
@@ -12,6 +13,7 @@ import {
 import type { PastMediaScopeLevel } from "./types";
 
 const ARCHDIOCESE_IMPORT_ROLES = ["super_admin", "archdiocese_admin", "archdiocese_data_entry"] as const;
+const MEDIA_IMPORT_PATH = `${getPastMediaImportPath()}?type=media`;
 
 function formString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -39,6 +41,7 @@ export async function scanPastMediaImportAction(formData: FormData) {
   const hierarchy = await getHierarchyCollections({ archdioceseId: context.archdioceseId });
   await scanPastMediaImport({ importId, context, hierarchy });
   revalidatePath(getPastMediaImportPath());
+  redirect(MEDIA_IMPORT_PATH);
 }
 
 export async function updatePastMediaImportReview(formData: FormData) {
@@ -59,7 +62,7 @@ export async function updatePastMediaImportReview(formData: FormData) {
   const markReady = formString(formData, "markReady") === "true";
 
   const supabase = createAdminClient();
-  await supabase
+  const { error } = await supabase
     .from("past_media_imports")
     .update({
       title: title || null,
@@ -80,7 +83,12 @@ export async function updatePastMediaImportReview(formData: FormData) {
     .eq("archdiocese_id", context.archdioceseId)
     .neq("review_status", "published");
 
+  if (error) {
+    throw new Error(error.message);
+  }
+
   revalidatePath(getPastMediaImportPath());
+  redirect(MEDIA_IMPORT_PATH);
 }
 
 export async function rejectPastMediaImport(formData: FormData) {
@@ -91,7 +99,7 @@ export async function rejectPastMediaImport(formData: FormData) {
   if (!importId) return;
 
   const supabase = createAdminClient();
-  await supabase
+  const { error } = await supabase
     .from("past_media_imports")
     .update({
       review_status: "rejected",
@@ -103,7 +111,12 @@ export async function rejectPastMediaImport(formData: FormData) {
     .eq("archdiocese_id", context.archdioceseId)
     .neq("review_status", "published");
 
+  if (error) {
+    throw new Error(error.message);
+  }
+
   revalidatePath(getPastMediaImportPath());
+  redirect(MEDIA_IMPORT_PATH);
 }
 
 export async function publishSelectedPastMediaImports(formData: FormData) {
@@ -121,4 +134,5 @@ export async function publishSelectedPastMediaImports(formData: FormData) {
   revalidatePath("/dashboard/archdiocese/media");
   revalidatePath("/dashboard/deanery/media");
   revalidatePath("/dashboard/parish/media");
+  redirect(MEDIA_IMPORT_PATH);
 }
