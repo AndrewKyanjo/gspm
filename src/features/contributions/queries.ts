@@ -488,4 +488,84 @@ export async function getContributionProjectOverviews(
   }));
 }
 
+export type ExcessParishRow = {
+  parishId: string;
+  parishName: string;
+  deaneryName: string | null;
+  vicariateName: string | null;
+  annualEmitemwaDue: number;
+  goodSamaritanDue: number;
+  combinedDue: number;
+  totalPaid: number;
+  excess: number;
+};
+
+export async function getExcessParishes(
+  archdioceseId: string,
+  year: number,
+): Promise<ExcessParishRow[]> {
+  const collections = await getHierarchyCollections({ archdioceseId });
+  const maps = buildHierarchyMaps(collections);
+  const parishes = collections.parishes;
+
+  if (parishes.length === 0) return [];
+
+  const parishIds = parishes.map((p) => p.id);
+  const supabase = createAdminClient();
+
+  const [paymentsResult, legacyResult] = await Promise.all([
+    supabase
+      .from("emitemwa_payments")
+      .select("parish_id, payment_kind, amount")
+      .in("parish_id", parishIds)
+      .eq("contribution_year", year),
+    supabase
+      .from("contribution_legacy_opening_balances")
+      .select("parish_id, paid_amount, balance_amount")
+      .in("parish_id", parishIds)
+      .eq("snapshot_year", year),
+  ]);
+
+  const paymentRows = (paymentsResult.data ?? []) as GenericRow[];
+  const legacyByParish = new Map(
+    ((legacyResult.data ?? []) as GenericRow[]).map((row) => [
+      String(row.parish_id),
+      { paid: numberValue(row.paid_amount), balance: numberValue(row.balance_amount) },
+    ]),
+  );
+
+  const results: ExcessParishRow[] = [];
+
+  for (const parish of parishes) {
+    const vicariate = maps.vicariatesById.get(parish.vicariate_id);
+    const deanery = maps.deaneriesById.get(parish.deanery_id);
+    const monthlyDue = numberValue(vicariate?.monthly_emitemwa_amount ?? 50000);
+    const goodSamaritanDue = numberValue(vicariate?.good_samaritan_day_amount ?? 250000);
+    const annualEmitemwaDue = monthlyDue * 12;
+    const legacy = legacyByParish.get(parish.id);
+    const effectiveAnnualDue = legacy ? legacy.paid + legacy.balance : annualEmitemwaDue;
+    const combinedDue = effectiveAnnualDue + goodSamaritanDue;
+
+    const parishPayments = paymentRows.filter((p) => p.parish_id === parish.id);
+    const totalPaid = parishPayments.reduce((sum, p) => sum + numberValue(p.amount), 0);
+
+    const excess = totalPaid - combinedDue;
+    if (excess > 0) {
+      results.push({
+        parishId: parish.id,
+        parishName: parish.name,
+        deaneryName: deanery?.name ?? null,
+        vicariateName: vicariate?.name ?? null,
+        annualEmitemwaDue: effectiveAnnualDue,
+        goodSamaritanDue,
+        combinedDue,
+        totalPaid,
+        excess,
+      });
+    }
+  }
+
+  return results.sort((a, b) => b.excess - a.excess);
+}
+
 export { MONTH_LABELS };
