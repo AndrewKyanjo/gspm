@@ -2,6 +2,7 @@ import {
   ArchiveRestore,
   BarChart3,
   Building2,
+  CalendarCheck,
   FileText,
   FolderKanban,
   HandCoins,
@@ -57,7 +58,7 @@ const ALL_ARCHDIOCESE_NAV_ITEMS: DashboardNavigationItem[] = [
         href: "/dashboard/archdiocese/documentation/reports",
         label: "Reports",
         icon: BarChart3,
-        aliases: ["/dashboard/archdiocese/reports"],
+        aliases: ["/dashboard/archdiocese/reports", "/dashboard/archdiocese/reports/monthly"],
       },
       {
         href: "/dashboard/archdiocese/documentation/documents",

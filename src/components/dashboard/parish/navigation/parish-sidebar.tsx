@@ -45,7 +45,7 @@ const parishNavigation: DashboardNavigationItem[] = [
         href: "/dashboard/parish/documentation/reports",
         label: "Reports",
         icon: BarChart3,
-        aliases: ["/dashboard/parish/reports"],
+        aliases: ["/dashboard/parish/reports", "/dashboard/parish/reports/monthly"],
       },
       {
         href: "/dashboard/parish/documentation/documents",

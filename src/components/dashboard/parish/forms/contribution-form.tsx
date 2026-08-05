@@ -62,7 +62,7 @@ export function MandatoryContributionForm({
         </label>
         <label className="space-y-2">
           <FieldLabel>Month</FieldLabel>
-          <select name="contributionMonth" defaultValue={new Date().getUTCMonth() + 1} className={inputClass}>
+          <select name="contributionMonth" defaultValue={String(new Date().getUTCMonth() + 1)} className={inputClass}>
             {[
               "January",
               "February",

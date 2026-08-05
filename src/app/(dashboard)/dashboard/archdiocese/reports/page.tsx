@@ -1,9 +1,11 @@
-import { Activity, CheckCircle2, RotateCcw } from "lucide-react";
+import { Activity, BarChart3, CalendarCheck, CheckCircle2, FileText, HandCoins, RotateCcw } from "lucide-react";
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { getArchdioceseReportOverview } from "@/features/archdiocese/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
@@ -39,9 +41,36 @@ export default async function ArchdioceseReportsPage() {
       role={context.role}
     >
       <PageHeader
-        title="Reports"
+        title="Report Center"
         description="Final oversight for reporting workflows across the full administrative hierarchy."
       />
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <Card className="hover:border-primary transition-colors">
+          <CardContent className="p-5">
+            <CalendarCheck className="h-6 w-6 text-primary mb-3" />
+            <h3 className="font-semibold text-on-surface">Monthly Reports</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Auto-generated composite reports combining finances, projects, and documents for each month.</p>
+            <Button href="/dashboard/archdiocese/reports/monthly" variant="secondary" size="sm" className="mt-3">View monthly reports</Button>
+          </CardContent>
+        </Card>
+        <Card className="hover:border-primary transition-colors">
+          <CardContent className="p-5">
+            <HandCoins className="h-6 w-6 text-primary mb-3" />
+            <h3 className="font-semibold text-on-surface">Financial Reports</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Comprehensive financial breakdown by vicariate, deanery, contribution type, and monthly trends.</p>
+            <Button href="/dashboard/archdiocese/reports/financial" variant="secondary" size="sm" className="mt-3">View financial reports</Button>
+          </CardContent>
+        </Card>
+        <Card className="hover:border-primary transition-colors">
+          <CardContent className="p-5">
+            <FileText className="h-6 w-6 text-primary mb-3" />
+            <h3 className="font-semibold text-on-surface">Parish Reports</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Browse, filter, and review all parish-submitted reports across the full hierarchy.</p>
+            <Button href="/dashboard/archdiocese/reports/parish-reports" variant="secondary" size="sm" className="mt-3">View parish reports</Button>
+          </CardContent>
+        </Card>
+      </section>
 
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard label="Submitted" value={overview.submitted} helper="Waiting in the pipeline" icon={Activity} />
