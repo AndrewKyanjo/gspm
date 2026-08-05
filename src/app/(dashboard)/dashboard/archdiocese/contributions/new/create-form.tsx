@@ -72,7 +72,7 @@ export function CreateContributionForm({ parishes, projects }: Props) {
           </label>
           <label className="space-y-2">
             <span className="block text-sm font-medium text-on-surface">Month</span>
-            <select name="contributionMonth" defaultValue={new Date().getUTCMonth() + 1} className={inputClass}>
+            <select name="contributionMonth" defaultValue={String(new Date().getUTCMonth() + 1)} className={inputClass}>
               {Array.from({ length: 12 }, (_, index) => (
                 <option key={index + 1} value={index + 1}>{index + 1}</option>
               ))}
