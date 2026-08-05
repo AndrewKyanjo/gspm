@@ -1,4 +1,4 @@
-import { CalendarCheck, HandCoins, ReceiptText } from "lucide-react";
+import { CalendarCheck, HandCoins, ReceiptText, TrendingUp, Users } from "lucide-react";
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
@@ -6,7 +6,7 @@ import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { PrintButton } from "@/components/dashboard/shared/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getContributionRollupReport, getProjectContributionBreakdowns, MONTH_LABELS } from "@/features/contributions/queries";
+import { getContributionRollupReport, getProjectContributionBreakdowns, getExcessParishes, MONTH_LABELS } from "@/features/contributions/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 const currencyFormatter = new Intl.NumberFormat("en-UG", {
@@ -27,14 +27,19 @@ export default async function ArchdioceseContributionsPage({
   const now = new Date();
   const year = Number(params?.year) || now.getUTCFullYear();
   const month = Number(params?.month) || now.getUTCMonth() + 1;
-  const [report, projects] = await Promise.all([
+  const [report, projects, excessParishes] = await Promise.all([
     getContributionRollupReport({
       scope: { archdioceseId: context.archdioceseId },
       year,
       month,
     }),
     getProjectContributionBreakdowns({ archdioceseId: context.archdioceseId }),
+    getExcessParishes(context.archdioceseId, year),
   ]);
+
+  // How many parishes cleared the current month (paid >= monthly due)
+  const currentMonthCleared = report.rows.filter((r) => r.monthPaid >= r.monthlyDue && r.monthlyDue > 0).length;
+  const totalParishes = report.rows.length;
 
   return (
     <ArchdioceseShell
@@ -58,24 +63,36 @@ export default async function ArchdioceseContributionsPage({
         description="Balances use each parish's vicariate rates for monthly Emitemwa and Good Samaritan Day."
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-5">
         <StatCard
           label="Current month paid"
           value={currencyFormatter.format(report.totals.monthPaid)}
-          helper={`${MONTH_LABELS[month - 1]} payments from all parishes`}
+          helper={`${MONTH_LABELS[month - 1]} payments`}
           icon={HandCoins}
         />
         <StatCard
           label="YTD paid"
           value={currencyFormatter.format(report.totals.ytdPaid)}
-          helper={`Total paid in ${year} by all parishes`}
+          helper={`Total paid in ${year}`}
           icon={CalendarCheck}
         />
         <StatCard
           label="General balance"
           value={currencyFormatter.format(report.totals.annualBalance)}
-          helper="Outstanding balance for all parishes"
+          helper="Outstanding balance"
           icon={ReceiptText}
+        />
+        <StatCard
+          label="Expected total"
+          value={currencyFormatter.format(report.totals.annualDue)}
+          helper={`Annual due across ${totalParishes} parishes`}
+          icon={TrendingUp}
+        />
+        <StatCard
+          label="Month cleared"
+          value={`${currentMonthCleared}/${totalParishes}`}
+          helper={`Parishes that paid ${MONTH_LABELS[month - 1]}`}
+          icon={Users}
         />
       </section>
 
@@ -109,6 +126,19 @@ export default async function ArchdioceseContributionsPage({
           { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
           {
+            header: "Cleared",
+            cell: (row) => {
+              const monthsCleared = row.monthlyDue > 0
+                ? Math.min(12, Math.floor(row.ytdPaid / row.monthlyDue))
+                : 0;
+              return (
+                <Badge variant={monthsCleared === 12 ? "success" : monthsCleared >= 6 ? "info" : "warning"}>
+                  {monthsCleared}/12 months
+                </Badge>
+              );
+            },
+          },
+          {
             header: "Opening",
             cell: (row) =>
               row.hasLegacyOpeningBalance ? (
@@ -126,6 +156,44 @@ export default async function ArchdioceseContributionsPage({
           },
         ]}
       />
+
+      {/* Excess parishes section */}
+      {excessParishes.length > 0 && (
+        <SimpleTable
+          title="Parishes exceeding contributions"
+          description={`Parishes that have paid more than their combined Emitemwa + Good Samaritan Day target for ${year}.`}
+          rows={excessParishes}
+          columns={[
+            {
+              header: "Parish",
+              cell: (row) => (
+                <div className="space-y-1">
+                  <div className="font-medium">{row.parishName}</div>
+                  <div className="text-xs text-on-surface-variant">
+                    {row.deaneryName ?? "-"} - {row.vicariateName ?? "-"}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              header: "Combined due",
+              cell: (row) => currencyFormatter.format(row.combinedDue),
+            },
+            {
+              header: "Total paid",
+              cell: (row) => currencyFormatter.format(row.totalPaid),
+            },
+            {
+              header: "Surplus",
+              cell: (row) => (
+                <Badge variant="success">
+                  +{currencyFormatter.format(row.excess)}
+                </Badge>
+              ),
+            },
+          ]}
+        />
+      )}
 
       <SimpleTable
         title="Project contribution totals"
