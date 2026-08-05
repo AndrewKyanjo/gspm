@@ -38,7 +38,7 @@ const vicariateNavigation: DashboardNavigationItem[] = [
         href: "/dashboard/vicariate/documentation/reports",
         label: "Reports",
         icon: BarChart3,
-        aliases: ["/dashboard/vicariate/reports"],
+        aliases: ["/dashboard/vicariate/reports", "/dashboard/vicariate/reports/monthly"],
       },
       {
         href: "/dashboard/vicariate/documentation/documents",

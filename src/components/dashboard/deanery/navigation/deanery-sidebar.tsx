@@ -37,7 +37,7 @@ const deaneryNavigation: DashboardNavigationItem[] = [
         href: "/dashboard/deanery/documentation/reports",
         label: "Reports",
         icon: BarChart3,
-        aliases: ["/dashboard/deanery/reports"],
+        aliases: ["/dashboard/deanery/reports", "/dashboard/deanery/reports/monthly"],
       },
       {
         href: "/dashboard/deanery/documentation/documents",

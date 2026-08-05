@@ -47,6 +47,7 @@ const PROJECT_ADMIN_ROLES = [
 
 export type ContributionActionState = {
   error: string | null;
+  message?: string | null;
 };
 
 function readString(formData: FormData, key: string) {
@@ -134,6 +135,125 @@ export async function recordMandatoryContribution(
   }
 
   const supabase = createAdminClient();
+  const currency = readString(formData, "currency") || "UGX";
+  const paymentMethod = readString(formData, "paymentMethod") || null;
+  const referenceNumber = readString(formData, "referenceNumber") || null;
+  const notes = readString(formData, "notes") || null;
+  const sourceChannel = readString(formData, "sourceChannel") || "system";
+
+  // ── Smart auto-allocation for monthly Emitemwa ─────────────────
+  if (paymentKind === "monthly") {
+    // Get vicariate rates for this parish
+    const { data: vicariate } = await supabase
+      .from("vicariates")
+      .select("monthly_emitemwa_amount, good_samaritan_day_amount")
+      .eq("id", parish.vicariate_id)
+      .maybeSingle();
+
+    const monthlyRate = Number(vicariate?.monthly_emitemwa_amount ?? 50000);
+    const annualDue = monthlyRate * 12;
+
+    // Get YTD Emitemwa paid (including legacy)
+    const { data: ytdPayments } = await supabase
+      .from("emitemwa_payments")
+      .select("amount")
+      .eq("parish_id", parish.id)
+      .eq("contribution_year", year)
+      .eq("payment_kind", "monthly");
+
+    const ytdPaidSoFar = (ytdPayments ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+
+    // Get legacy opening balance
+    const { data: legacy } = await supabase
+      .from("contribution_legacy_opening_balances")
+      .select("paid_amount, balance_amount")
+      .eq("parish_id", parish.id)
+      .eq("snapshot_year", year)
+      .maybeSingle();
+
+    const legacyPaid = Number(legacy?.paid_amount ?? 0);
+    const legacyBalance = Number(legacy?.balance_amount ?? 0);
+    const effectiveAnnualDue = legacy ? legacyPaid + legacyBalance : annualDue;
+    const effectiveYtdPaid = legacyPaid + ytdPaidSoFar;
+    const remaining = effectiveAnnualDue - effectiveYtdPaid;
+
+    if (remaining <= 0) {
+      // Annual Emitemwa is fully paid — entire amount goes to GSD
+      const { error } = await supabase.from("emitemwa_payments").insert({
+        archdiocese_id: parish.archdiocese_id,
+        vicariate_id: parish.vicariate_id,
+        deanery_id: parish.deanery_id,
+        parish_id: parish.id,
+        recorded_by: ctx.userId,
+        payment_kind: "good_samaritan_day",
+        contribution_year: year,
+        contribution_month: null,
+        amount,
+        currency,
+        paid_on: paidOn,
+        payment_method: paymentMethod,
+        reference_number: referenceNumber,
+        notes: notes ? `${notes} (auto-allocated: Emitemwa fully paid for ${year})` : `Auto-allocated: Emitemwa fully paid for ${year}`,
+        source_channel: sourceChannel,
+      });
+
+      if (error) return { error: error.message };
+
+      revalidateContributionViews();
+      redirect(readString(formData, "returnTo") || "/dashboard/parish/contributions");
+    }
+
+    if (amount > remaining) {
+      // Split: remaining goes to Emitemwa, excess goes to GSD
+      const emitemwaAmount = remaining;
+      const gsdAmount = amount - remaining;
+
+      const { error } = await supabase.from("emitemwa_payments").insert([
+        {
+          archdiocese_id: parish.archdiocese_id,
+          vicariate_id: parish.vicariate_id,
+          deanery_id: parish.deanery_id,
+          parish_id: parish.id,
+          recorded_by: ctx.userId,
+          payment_kind: "monthly",
+          contribution_year: year,
+          contribution_month: month,
+          amount: emitemwaAmount,
+          currency,
+          paid_on: paidOn,
+          payment_method: paymentMethod,
+          reference_number: referenceNumber,
+          notes: notes ? `${notes} (auto-split: ${emitemwaAmount} to Emitemwa)` : `Auto-split: ${emitemwaAmount} to Emitemwa`,
+          source_channel: sourceChannel,
+        },
+        {
+          archdiocese_id: parish.archdiocese_id,
+          vicariate_id: parish.vicariate_id,
+          deanery_id: parish.deanery_id,
+          parish_id: parish.id,
+          recorded_by: ctx.userId,
+          payment_kind: "good_samaritan_day",
+          contribution_year: year,
+          contribution_month: null,
+          amount: gsdAmount,
+          currency,
+          paid_on: paidOn,
+          payment_method: paymentMethod,
+          reference_number: referenceNumber,
+          notes: notes ? `${notes} (auto-split: ${gsdAmount} surplus to GSD)` : `Auto-split: ${gsdAmount} surplus to Good Samaritan Day`,
+          source_channel: sourceChannel,
+        },
+      ]);
+
+      if (error) return { error: error.message };
+
+      revalidateContributionViews();
+      redirect(readString(formData, "returnTo") || "/dashboard/parish/contributions");
+    }
+    // else: amount <= remaining — normal insert below
+  }
+
+  // ── Normal insert (no split needed) ────────────────────────────
   const { error } = await supabase.from("emitemwa_payments").insert({
     archdiocese_id: parish.archdiocese_id,
     vicariate_id: parish.vicariate_id,
@@ -144,12 +264,12 @@ export async function recordMandatoryContribution(
     contribution_year: year,
     contribution_month: month,
     amount,
-    currency: readString(formData, "currency") || "UGX",
+    currency,
     paid_on: paidOn,
-    payment_method: readString(formData, "paymentMethod") || null,
-    reference_number: readString(formData, "referenceNumber") || null,
-    notes: readString(formData, "notes") || null,
-    source_channel: readString(formData, "sourceChannel") || "system",
+    payment_method: paymentMethod,
+    reference_number: referenceNumber,
+    notes,
+    source_channel: sourceChannel,
   });
 
   if (error) {
