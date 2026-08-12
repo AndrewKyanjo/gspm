@@ -556,13 +556,43 @@ export async function bulkCreateContributions(
 }
 
 /**
- * Delete a contribution by id.  Restricted to admins only for v1 —
- * proxy-entry staff cannot delete records they've entered.
+ * Delete a contribution by id.  Restricted to admins and hierarchy heads
+ * who have scope over the contribution's parish.
  */
 export async function deleteContribution(id: string): Promise<{ error: string | null }> {
-  await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const ctx = await requireAuth({
+    roles: [
+      "super_admin",
+      "archdiocese_admin",
+      "archdiocese_data_entry",
+      "vicariate_head",
+      "vicariate_staff",
+      "deanery_head",
+      "deanery_staff",
+      "parish_head",
+      "parish_data_entry",
+    ],
+  });
 
   const supabase = createAdminClient();
+
+  // Scoped users can only delete contributions within their scope
+  if (ctx.level !== "archdiocese" || !["super_admin", "archdiocese_admin"].includes(ctx.role)) {
+    const { data: existing } = await supabase
+      .from("parish_contributions")
+      .select("parish_id, vicariate_id, deanery_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existing && !canProxyEnterForScope(ctx, {
+      parishId: existing.parish_id,
+      vicariateId: existing.vicariate_id,
+      deaneryId: existing.deanery_id,
+    })) {
+      return { error: "You do not have permission to delete this contribution." };
+    }
+  }
+
   const { error } = await supabase.from("parish_contributions").delete().eq("id", id);
 
   if (error) {
@@ -570,5 +600,107 @@ export async function deleteContribution(id: string): Promise<{ error: string | 
   }
 
   revalidatePath("/dashboard/archdiocese/contributions");
+  revalidatePath("/dashboard/vicariate/contributions");
+  revalidatePath("/dashboard/deanery/contributions");
+  revalidatePath("/dashboard/parish/contributions");
+  return { error: null };
+}
+
+/**
+ * Delete an Emitemwa payment record.  Scope-restricted like deleteContribution.
+ */
+export async function deleteEmitemwaPayment(id: string): Promise<{ error: string | null }> {
+  const ctx = await requireAuth({
+    roles: [
+      "super_admin",
+      "archdiocese_admin",
+      "archdiocese_data_entry",
+      "vicariate_head",
+      "vicariate_staff",
+      "deanery_head",
+      "deanery_staff",
+      "parish_head",
+      "parish_data_entry",
+    ],
+  });
+
+  const supabase = createAdminClient();
+
+  if (ctx.level !== "archdiocese" || !["super_admin", "archdiocese_admin"].includes(ctx.role)) {
+    const { data: existing } = await supabase
+      .from("emitemwa_payments")
+      .select("parish_id, vicariate_id, deanery_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existing && !canProxyEnterForScope(ctx, {
+      parishId: existing.parish_id,
+      vicariateId: existing.vicariate_id,
+      deaneryId: existing.deanery_id,
+    })) {
+      return { error: "You do not have permission to delete this payment." };
+    }
+  }
+
+  const { error } = await supabase.from("emitemwa_payments").delete().eq("id", id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/archdiocese/contributions");
+  revalidatePath("/dashboard/vicariate/contributions");
+  revalidatePath("/dashboard/deanery/contributions");
+  revalidatePath("/dashboard/parish/contributions");
+  return { error: null };
+}
+
+/**
+ * Delete a project contribution payment record.
+ */
+export async function deleteProjectContributionPayment(id: string): Promise<{ error: string | null }> {
+  const ctx = await requireAuth({
+    roles: [
+      "super_admin",
+      "archdiocese_admin",
+      "archdiocese_data_entry",
+      "vicariate_head",
+      "vicariate_staff",
+      "deanery_head",
+      "deanery_staff",
+      "parish_head",
+      "parish_data_entry",
+    ],
+  });
+
+  const supabase = createAdminClient();
+
+  if (ctx.level !== "archdiocese" || !["super_admin", "archdiocese_admin"].includes(ctx.role)) {
+    const { data: existing } = await supabase
+      .from("project_contribution_payments")
+      .select("parish_id, vicariate_id, deanery_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existing && !canProxyEnterForScope(ctx, {
+      parishId: existing.parish_id,
+      vicariateId: existing.vicariate_id,
+      deaneryId: existing.deanery_id,
+    })) {
+      return { error: "You do not have permission to delete this payment." };
+    }
+  }
+
+  const { error } = await supabase.from("project_contribution_payments").delete().eq("id", id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/archdiocese/contributions");
+  revalidatePath("/dashboard/archdiocese/projects");
+  revalidatePath("/dashboard/vicariate/contributions");
+  revalidatePath("/dashboard/deanery/contributions");
+  revalidatePath("/dashboard/parish/contributions");
   return { error: null };
 }
