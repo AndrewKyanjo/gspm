@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { DashboardNavigationItem } from "./dashboard-sidebar";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export function DashboardShell({
   pathname,
@@ -37,7 +38,7 @@ export function DashboardShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-surface md:flex">
+    <SidebarProvider>
       <DashboardSidebar
         pathname={pathname}
         navigation={navigation}
@@ -46,7 +47,8 @@ export function DashboardShell({
         footerTitle={footerTitle}
         footerDescription={footerDescription}
       />
-      <div className="min-w-0 flex-1">
+      <SidebarInset>
+        <SidebarTrigger className="absolute left-5 top-4 z-10 md:hidden" />
         <DashboardTopbar
           eyebrow={eyebrow}
           title={title}
@@ -58,7 +60,7 @@ export function DashboardShell({
           scopeLabel={scopeLabel}
         />
         <main className="space-y-8 px-5 py-6 md:px-8">{children}</main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

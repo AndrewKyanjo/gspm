@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { DashboardTopbar } from "@/components/dashboard/shared/dashboard-topbar";
 import { VicariateSidebar } from "../navigation/vicariate-sidebar";
 import type { AppRole } from "@/types/auth";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export function VicariateShell({
   pathname,
@@ -27,14 +28,15 @@ export function VicariateShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-surface md:flex">
+    <SidebarProvider>
       <VicariateSidebar
         pathname={pathname}
         role={role}
         userName={userName}
         userEmail={userEmail}
       />
-      <div className="min-w-0 flex-1">
+      <SidebarInset>
+        <SidebarTrigger className="absolute left-5 top-4 z-10 md:hidden" />
         <DashboardTopbar
           eyebrow={eyebrow}
           title={title}
@@ -46,7 +48,7 @@ export function VicariateShell({
           scopeLabel="Vicariate Scope"
         />
         <main className="space-y-8 px-5 py-6 md:px-8">{children}</main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

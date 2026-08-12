@@ -1,8 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarUserFooter } from "./sidebar-user-footer";
 import type { AppRole } from "@/types/auth";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
 
 export type DashboardNavigationItem = {
   href?: string;
@@ -36,97 +54,122 @@ export function DashboardSidebar({
   function isActive(item: DashboardNavigationItem) {
     const paths = [item.href, ...(item.aliases ?? [])].filter((path): path is string => Boolean(path));
     if (paths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) return true;
-
     return item.children?.some(isActive) ?? false;
   }
 
   return (
-    <aside className="hidden w-[272px] shrink-0 border-r border-outline-variant bg-primary text-on-primary lg:flex lg:flex-col">
-      <div className="border-b border-white/10 px-5 py-4">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-sm font-bold text-on-secondary">
-            GS
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold leading-tight">GSPM Portal</span>
-            <span className="block truncate text-xs text-primary-fixed-dim">{title}</span>
-          </span>
-        </Link>
-      </div>
+    <Sidebar collapsible="icon" variant="sidebar" className="bg-primary text-on-primary border-outline-variant">
+      {/* Branding header */}
+      <SidebarHeader className="border-b border-white/10 px-3 py-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              tooltip="GSPM Portal"
+              className="hover:bg-white/6 data-[active=true]:bg-white/8"
+            >
+              <Link href="/dashboard" className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-sm font-bold text-on-secondary">
+                  GS
+                </span>
+                <span className="min-w-0 text-left">
+                  <span className="block text-sm font-semibold leading-tight">GSPM Portal</span>
+                  <span className="block truncate text-xs text-primary-fixed-dim">{title}</span>
+                </span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1.5">
-          {navigation.map((item) => {
-            const active = isActive(item);
-            const Icon = item.icon;
-            const children = item.children ?? [];
+      {/* Navigation */}
+      <SidebarContent className="px-2 py-4">
+        {navigation.map((item) => {
+          const active = isActive(item);
+          const Icon = item.icon;
+          const children = item.children ?? [];
 
-            if (children.length > 0) {
-              return (
-                <li key={item.label} className="space-y-1">
-                  <div
-                    className={cn(
-                      "flex items-center gap-3 rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wide",
-                      active ? "bg-white/8 text-on-primary" : "text-primary-fixed-dim",
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </div>
-                  <ul className="ml-4 space-y-1 border-l border-white/10 pl-3">
+          if (children.length > 0) {
+            // Section header with children — becomes a SidebarGroup (column)
+            return (
+              <SidebarGroup key={item.label} className="py-1">
+                <SidebarGroupLabel
+                  className={cn(
+                    "text-xs font-semibold uppercase tracking-wide",
+                    active ? "bg-white/8 text-on-primary" : "text-primary-fixed-dim",
+                  )}
+                >
+                  <Icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
                     {children.map((child) => {
                       const ChildIcon = child.icon;
                       const childActive = isActive(child);
-
                       return (
-                        <li key={child.href ?? child.label}>
-                          <Link
-                            href={child.href ?? "#"}
+                        <SidebarMenuItem key={child.href ?? child.label}>
+                          <SidebarMenuButton
+                            isActive={childActive}
+                            tooltip={child.label}
                             className={cn(
-                              "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                              "pl-6 text-sm font-medium transition-colors",
                               childActive
                                 ? "bg-white/10 text-on-primary"
                                 : "text-primary-fixed hover:bg-white/6 hover:text-on-primary",
                             )}
                           >
-                            <ChildIcon className="h-4 w-4" />
-                            <span>{child.label}</span>
-                          </Link>
-                        </li>
+                            <Link href={child.href ?? "#"} className="flex items-center gap-3">
+                              <ChildIcon className="h-4 w-4" />
+                              <span>{child.label}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
                       );
                     })}
-                  </ul>
-                </li>
-              );
-            }
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          }
 
-            return (
-              <li key={item.href ?? item.label}>
-                <Link
-                  href={item.href ?? "#"}
+          // Top-level item (no children)
+          return (
+            <SidebarMenu key={item.href ?? item.label}>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active}
+                  tooltip={item.label}
                   className={cn(
-                    "group flex items-center gap-3 rounded-md border-l-2 px-4 py-3 text-sm font-medium transition-colors",
+                    "text-sm font-medium transition-colors",
                     active
-                      ? "border-secondary bg-white/8 text-on-primary"
-                      : "border-transparent text-primary-fixed hover:bg-white/6 hover:text-on-primary"
+                      ? "border-l-2 border-secondary bg-white/8 text-on-primary"
+                      : "border-l-2 border-transparent text-primary-fixed hover:bg-white/6 hover:text-on-primary",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  <Link href={item.href ?? "#"} className="flex items-center gap-3">
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          );
+        })}
+      </SidebarContent>
 
+      {/* User footer */}
       {userRole && (
-        <SidebarUserFooter
-          userName={userName ?? null}
-          userEmail={userEmail ?? null}
-          userRole={userRole}
-        />
+        <SidebarFooter className="border-t border-white/10">
+          <SidebarUserFooter
+            userName={userName ?? null}
+            userEmail={userEmail ?? null}
+            userRole={userRole}
+          />
+        </SidebarFooter>
       )}
-    </aside>
+
+      <SidebarRail className="after:bg-transparent hover:after:bg-white/4" />
+    </Sidebar>
   );
 }
