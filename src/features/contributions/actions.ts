@@ -143,14 +143,29 @@ export async function recordMandatoryContribution(
 
   // ── Smart auto-allocation for monthly Emitemwa ─────────────────
   if (paymentKind === "monthly") {
-    // Get vicariate rates for this parish
+    // Get parish-specific rate overrides (if any)
+    const { data: parishData } = await supabase
+      .from("parishes")
+      .select("monthly_emitemwa_amount, good_samaritan_day_amount")
+      .eq("id", parish.id)
+      .maybeSingle();
+
+    // Get vicariate rates for this parish (fallback)
     const { data: vicariate } = await supabase
       .from("vicariates")
       .select("monthly_emitemwa_amount, good_samaritan_day_amount")
       .eq("id", parish.vicariate_id)
       .maybeSingle();
 
-    const monthlyRate = Number(vicariate?.monthly_emitemwa_amount ?? 50000);
+    // Priority: Parish override > Vicariate rate > Default (50000)
+    const parishMonthlyOverride = parishData?.monthly_emitemwa_amount != null
+      ? Number(parishData.monthly_emitemwa_amount)
+      : null;
+    const parishGsdOverride = parishData?.good_samaritan_day_amount != null
+      ? Number(parishData.good_samaritan_day_amount)
+      : null;
+
+    const monthlyRate = parishMonthlyOverride ?? Number(vicariate?.monthly_emitemwa_amount ?? 50000);
     const annualDue = monthlyRate * 12;
 
     // Get YTD Emitemwa paid (including legacy)
@@ -431,6 +446,47 @@ export async function createContributionProject(
   revalidatePath("/dashboard/archdiocese/projects");
   revalidatePath("/dashboard/parish/contributions");
   redirect(readString(formData, "returnTo") || "/dashboard/archdiocese/projects");
+}
+
+export async function updateParishContributionRates(
+  _previousState: ContributionActionState,
+  formData: FormData,
+): Promise<ContributionActionState> {
+  await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const parishId = readString(formData, "parishId");
+  const monthlyStr = readString(formData, "monthlyEmitemwaAmount");
+  const gsdStr = readString(formData, "goodSamaritanDayAmount");
+
+  if (!parishId) {
+    return { error: "Parish ID is required." };
+  }
+
+  // Empty values = clear override (revert to vicariate rate)
+  const monthly = monthlyStr !== "" ? readAmount(formData, "monthlyEmitemwaAmount") : null;
+  const goodSamaritan = gsdStr !== "" ? readAmount(formData, "goodSamaritanDayAmount") : null;
+
+  // Validate non-negative if provided
+  if (monthly !== null && (!Number.isFinite(monthly) || monthly < 0)) {
+    return { error: "Monthly Emitemwa rate must be a valid non-negative number." };
+  }
+  if (goodSamaritan !== null && (!Number.isFinite(goodSamaritan) || goodSamaritan < 0)) {
+    return { error: "Good Samaritan Day rate must be a valid non-negative number." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("parishes")
+    .update({
+      monthly_emitemwa_amount: monthly,
+      good_samaritan_day_amount: goodSamaritan,
+    })
+    .eq("id", parishId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/archdiocese/parishes");
+  revalidateContributionViews();
+  return { error: null, message: "Parish rates updated." };
 }
 
 export async function updateVicariateContributionRates(
