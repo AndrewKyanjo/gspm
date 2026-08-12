@@ -218,7 +218,9 @@ export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promi
   const doc = new Pdfkit({ size: "A4", margin: 40 });
   const buffers: Buffer[] = [];
   doc.on("data", (chunk: Buffer) => buffers.push(chunk));
-  doc.on("end", () => resolve(Buffer.concat(buffers)));
+  const pdfPromise = new Promise<Buffer>((resolve) => {
+    doc.on("end", () => resolve(Buffer.concat(buffers)));
+  });
 
   // Header
   if (logo) {
@@ -290,4 +292,5 @@ export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promi
   }
 
   doc.end();
+  return pdfPromise;
 }
