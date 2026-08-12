@@ -53,7 +53,16 @@ export default async function ParishDetailPage({ params }: Props) {
       <PageHeader
         title={detail.name}
         description={`Code: ${detail.code ?? "N/A"} • Archdiocese: ${detail.archdioceseName ?? "N/A"}`}
-        actions={<Button href="/dashboard/archdiocese/parishes" variant="secondary">All parishes</Button>}
+        actions={
+          <span className="inline-flex items-center gap-2">
+            <Button href={`/dashboard/archdiocese/parishes/${parishId}/contributions`} variant="secondary">
+              Contribution Rates
+            </Button>
+            <Button href="/dashboard/archdiocese/parishes" variant="secondary">
+              All parishes
+            </Button>
+          </span>
+        }
       />
 
       <section className="grid gap-4 md:grid-cols-5">
