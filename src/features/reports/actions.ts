@@ -127,3 +127,22 @@ export async function publishMonthlyReport(
 
   revalidatePath("/dashboard");
 }
+
+export async function deleteMonthlyReport(id: string): Promise<{ error: string | null }> {
+  await requireAuth({
+    roles: ["super_admin", "archdiocese_admin", "archdiocese_data_entry"],
+  });
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("generated_monthly_reports")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard");
+  return { error: null };
+}

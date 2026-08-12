@@ -94,3 +94,61 @@ export async function uploadParishDocument(
   revalidatePath("/dashboard/parish/documents");
   redirect("/dashboard/parish/documents");
 }
+
+export async function deleteParishDocument(id: string): Promise<{ error: string | null }> {
+  const ctx = await requireAuth({
+    roles: [
+      "super_admin",
+      "archdiocese_admin",
+      "archdiocese_data_entry",
+      "vicariate_head",
+      "vicariate_staff",
+      "deanery_head",
+      "deanery_staff",
+      "parish_head",
+      "parish_data_entry",
+    ],
+  });
+
+  const supabase = createAdminClient();
+
+  // Fetch document to check scope and get storage path
+  const { data: doc } = await supabase
+    .from("parish_documents")
+    .select("parish_id, vicariate_id, deanery_id, storage_path")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!doc) {
+    return { error: "Document not found." };
+  }
+
+  // Scope check for non-admin users
+  if (ctx.level !== "archdiocese" || !["super_admin", "archdiocese_admin"].includes(ctx.role)) {
+    if (
+      ctx.parishId !== doc.parish_id &&
+      ctx.vicariateId !== doc.vicariate_id &&
+      ctx.deaneryId !== doc.deanery_id
+    ) {
+      return { error: "You do not have permission to delete this document." };
+    }
+  }
+
+  // Delete storage file
+  if (doc.storage_path) {
+    await supabase.storage.from(PARISH_DOCUMENT_BUCKET).remove([doc.storage_path]);
+  }
+
+  // Delete database record
+  const { error } = await supabase.from("parish_documents").delete().eq("id", id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/parish/documents");
+  revalidatePath("/dashboard/archdiocese/documents");
+  revalidatePath("/dashboard/vicariate/documents");
+  revalidatePath("/dashboard/deanery/documents");
+  return { error: null };
+}

@@ -101,12 +101,41 @@ export async function bulkCreateProjects(
 }
 
 /**
- * Delete a project by id.  Restricted to admins only for v1.
+ * Delete a project by id. Scoped to hierarchy heads and admins.
  */
 export async function deleteProject(id: string): Promise<{ error: string | null }> {
-  const ctx = await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const ctx = await requireAuth({
+    roles: [
+      "super_admin",
+      "archdiocese_admin",
+      "archdiocese_data_entry",
+      "vicariate_head",
+      "vicariate_staff",
+      "deanery_head",
+      "deanery_staff",
+      "parish_head",
+      "parish_data_entry",
+    ],
+  });
 
   const supabase = createAdminClient();
+
+  if (ctx.level !== "archdiocese" || !["super_admin", "archdiocese_admin"].includes(ctx.role)) {
+    const { data: existing } = await supabase
+      .from("parish_projects")
+      .select("parish_id, vicariate_id, deanery_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existing && !canProxyEnterForScope(ctx, {
+      parishId: existing.parish_id,
+      vicariateId: existing.vicariate_id,
+      deaneryId: existing.deanery_id,
+    })) {
+      return { error: "You do not have permission to delete this project." };
+    }
+  }
+
   const { error } = await supabase.from("parish_projects").delete().eq("id", id);
 
   if (error) {
@@ -114,5 +143,8 @@ export async function deleteProject(id: string): Promise<{ error: string | null 
   }
 
   revalidatePath("/dashboard/archdiocese/projects");
+  revalidatePath("/dashboard/vicariate/projects");
+  revalidatePath("/dashboard/deanery/projects");
+  revalidatePath("/dashboard/parish/projects");
   return { error: null };
 }
