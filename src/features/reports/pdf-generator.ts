@@ -1,18 +1,13 @@
 /**
- * PDF Report Generator using fluentreports.
+ * PDF Report Generator using pdfkit.
  *
  * Generates contribution, monthly, and project reports with the GSPM logo.
  * In Next.js serverless/edge environments, the report is rendered to a Buffer
  * and returned for download via an API route.
  */
 
-import { Readable } from "stream";
 import path from "path";
 import fs from "fs";
-
-// fluentreports uses a callback-based async API via asyncRender()
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { Report } = require("fluentreports");
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -26,43 +21,6 @@ function getLogoBuffer(): Buffer | null {
   } catch {
     return null;
   }
-}
-
-/** Wrap fluentreports asyncRender in a Promise */
-function renderToBuffer(report: InstanceType<typeof Report>): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    const stream = new Readable({ read() {} }); // dummy readable
-
-    // fluentreports writes to the output via the Report constructor's stream
-    // We use pdfkit's built-in buffer mechanism
-    report.asyncRender((err: Error | null) => {
-      if (err) return reject(err);
-      try {
-        // After asyncRender completes, we need the PDF data
-        // fluentreports stores the pdfkit document — access via report._doc
-        const doc = (report as any)._doc;
-        if (doc && typeof doc.outputSync === "function") {
-          // pdfkit's outputSync returns a Buffer when called without args
-          // but we need to handle the async case
-          const buffers: Buffer[] = [];
-          doc.on("data", (chunk: Buffer) => buffers.push(chunk));
-          doc.on("end", () => resolve(Buffer.concat(buffers)));
-          doc.end();
-        } else {
-          // Fallback: try to get the internal buffer
-          const pdfBuffer = (report as any)._pdfBuffer;
-          if (pdfBuffer) {
-            resolve(Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer));
-          } else {
-            reject(new Error("Could not extract PDF buffer from report."));
-          }
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  });
 }
 
 /** Format currency in UGX */
