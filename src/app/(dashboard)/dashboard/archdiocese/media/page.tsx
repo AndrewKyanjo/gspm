@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type MediaItem = {
+export type MediaItem = {
   id: string;
   title: string;
   description: string | null;
@@ -172,10 +172,6 @@ export default async function ArchdioceseMediaPage() {
                   src={item.previewUrl ?? item.storagePath}
                   alt={item.title}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                  }}
                 />
                 <span className="material-symbols-outlined text-4xl text-outline hidden">
                   image_not_supported
