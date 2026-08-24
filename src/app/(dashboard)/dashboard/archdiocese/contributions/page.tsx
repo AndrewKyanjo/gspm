@@ -1,4 +1,4 @@
-import { CalendarCheck, HandCoins, ReceiptText, TrendingUp, Users } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, HandCoins, ReceiptText, TrendingUp, Users } from "lucide-react";
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
@@ -60,10 +60,10 @@ export default async function ArchdioceseContributionsPage({
     >
       <PageHeader
         title="Mandatory contribution oversight"
-        description="Balances use each parish's vicariate rates for monthly Emitemwa and Good Samaritan Day."
+        description="Balances use each parish's effective rates: parish overrides first, then vicariate defaults."
       />
 
-      <section className="grid gap-4 md:grid-cols-5">
+      <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Current month paid"
           value={currencyFormatter.format(report.totals.monthPaid)}
@@ -71,19 +71,19 @@ export default async function ArchdioceseContributionsPage({
           icon={HandCoins}
         />
         <StatCard
-          label="YTD paid"
+          label="Emitemwa applied"
           value={currencyFormatter.format(report.totals.ytdPaid)}
-          helper={`Total paid in ${year}`}
+          helper={`Applied to the ${year} obligation`}
           icon={CalendarCheck}
         />
         <StatCard
-          label="General balance"
+          label="Emitemwa balance"
           value={currencyFormatter.format(report.totals.annualBalance)}
           helper="Outstanding balance"
           icon={ReceiptText}
         />
         <StatCard
-          label="Expected total"
+          label="Emitemwa due"
           value={currencyFormatter.format(report.totals.annualDue)}
           helper={`Annual due across ${totalParishes} parishes`}
           icon={TrendingUp}
@@ -93,6 +93,12 @@ export default async function ArchdioceseContributionsPage({
           value={`${currentMonthCleared}/${totalParishes}`}
           helper={`Parishes that paid ${MONTH_LABELS[month - 1]}`}
           icon={Users}
+        />
+        <StatCard
+          label="Parish surplus"
+          value={currencyFormatter.format(report.totals.surplus)}
+          helper="Credit after both obligations"
+          icon={CircleDollarSign}
         />
       </section>
 
@@ -123,7 +129,8 @@ export default async function ArchdioceseContributionsPage({
             ),
           },
           { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
-          { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
+          { header: "Total recorded", cell: (row) => currencyFormatter.format(row.totalRecorded) },
+          { header: "Emitemwa applied", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
           {
             header: "Cleared",
@@ -143,7 +150,7 @@ export default async function ArchdioceseContributionsPage({
             cell: (row) =>
               row.hasLegacyOpeningBalance ? (
                 <Badge variant="info">
-                  {currencyFormatter.format(row.legacyPaid)} paid / {currencyFormatter.format(row.legacyBalance)} bal
+                  {currencyFormatter.format(row.legacyPaid + row.legacySurplus)} imported / {currencyFormatter.format(row.legacyBalance)} bal
                 </Badge>
               ) : (
                 <Badge>Live only</Badge>
@@ -152,7 +159,24 @@ export default async function ArchdioceseContributionsPage({
           {
             header: "Good Samaritan",
             cell: (row) =>
-              row.goodSamaritanCleared ? <Badge variant="success">Cleared</Badge> : <Badge variant="warning">Open</Badge>,
+              <div className="space-y-1">
+                <Badge variant={row.goodSamaritanCleared ? "success" : "warning"}>
+                  {row.goodSamaritanCleared ? "Cleared" : `${currencyFormatter.format(row.goodSamaritanDue - row.goodSamaritanPaid)} open`}
+                </Badge>
+                <div className="text-xs text-on-surface-variant">
+                  {currencyFormatter.format(row.goodSamaritanPaid)} / {currencyFormatter.format(row.goodSamaritanDue)}
+                </div>
+              </div>,
+          },
+          {
+            header: "Surplus",
+            cell: (row) => row.surplus > 0 ? <Badge variant="success">+{currencyFormatter.format(row.surplus)}</Badge> : "-",
+          },
+          {
+            header: "Overall",
+            cell: (row) => row.annualBalance === 0 && row.goodSamaritanCleared
+              ? <Badge variant="success">Cleared</Badge>
+              : <Badge variant="warning">Outstanding</Badge>,
           },
         ]}
       />

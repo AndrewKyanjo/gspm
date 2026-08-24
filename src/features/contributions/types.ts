@@ -96,6 +96,8 @@ export type GoodSamaritanStatus = {
   paid: number;
   balance: number;
   cleared: boolean;
+  recordedDirectly: number;
+  allocatedFromEmitemwaExcess: number;
 };
 
 export type ParishContributionProject = {
@@ -123,6 +125,7 @@ export type ParishContributionDashboard = {
   monthlyPaidTotal: number;
   monthlyAnnualDue: number;
   monthlyAnnualBalance: number;
+  surplus: number;
   goodSamaritan: GoodSamaritanStatus;
   payments: EmitemwaPayment[];
   projects: ParishContributionProject[];
@@ -130,6 +133,7 @@ export type ParishContributionDashboard = {
     sourceParishName: string;
     paidAmount: number;
     balanceAmount: number;
+    surplusAmount: number;
   } | null;
 };
 
@@ -140,15 +144,20 @@ export type ContributionReportRow = {
   vicariateName: string | null;
   legacyPaid: number;
   legacyBalance: number;
+  legacySurplus: number;
   hasLegacyOpeningBalance: boolean;
   monthlyDue: number;
   monthPaid: number;
   ytdPaid: number;
+  totalRecorded: number;
   annualDue: number;
   annualBalance: number;
   goodSamaritanDue: number;
   goodSamaritanPaid: number;
+  goodSamaritanRecorded: number;
+  emitemwaExcessAllocated: number;
   goodSamaritanCleared: boolean;
+  surplus: number;
   payments: EmitemwaPayment[];
 };
 
@@ -161,11 +170,13 @@ export type ContributionRollupReport = {
   totals: {
     monthPaid: number;
     ytdPaid: number;
+    totalRecorded: number;
     annualDue: number;
     annualBalance: number;
     goodSamaritanDue: number;
     goodSamaritanPaid: number;
     goodSamaritanClearedCount: number;
+    surplus: number;
   };
 };
 

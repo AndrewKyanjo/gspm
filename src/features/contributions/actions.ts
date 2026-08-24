@@ -11,6 +11,8 @@ import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canProxyEnterForScope } from "@/lib/permissions/access";
 import type { BulkCreateContributionsInput, BulkCreateContributionsResult } from "./types";
+import type { RowActionResult } from "@/components/dashboard/shared/edit-delete-row-actions";
+import { allocateMandatoryContributions } from "./calculations";
 
 /** Roles that are allowed to use the bulk-create endpoint. */
 const BULK_CREATE_ROLES = [
@@ -161,36 +163,44 @@ export async function recordMandatoryContribution(
     const parishMonthlyOverride = parishData?.monthly_emitemwa_amount != null
       ? Number(parishData.monthly_emitemwa_amount)
       : null;
-    const parishGsdOverride = parishData?.good_samaritan_day_amount != null
-      ? Number(parishData.good_samaritan_day_amount)
-      : null;
-
     const monthlyRate = parishMonthlyOverride ?? Number(vicariate?.monthly_emitemwa_amount ?? 50000);
-    const annualDue = monthlyRate * 12;
+    const goodSamaritanRate = Number(
+      parishData?.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
+    );
 
     // Get YTD Emitemwa paid (including legacy)
     const { data: ytdPayments } = await supabase
       .from("emitemwa_payments")
-      .select("amount")
+      .select("payment_kind, amount")
       .eq("parish_id", parish.id)
-      .eq("contribution_year", year)
-      .eq("payment_kind", "monthly");
+      .eq("contribution_year", year);
 
-    const ytdPaidSoFar = (ytdPayments ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+    const monthlyPaidSoFar = (ytdPayments ?? [])
+      .filter((payment) => payment.payment_kind === "monthly")
+      .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+    const goodSamaritanPaidSoFar = (ytdPayments ?? [])
+      .filter((payment) => payment.payment_kind === "good_samaritan_day")
+      .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
 
     // Get legacy opening balance
     const { data: legacy } = await supabase
       .from("contribution_legacy_opening_balances")
-      .select("paid_amount, balance_amount")
+      .select("*")
       .eq("parish_id", parish.id)
       .eq("snapshot_year", year)
       .maybeSingle();
 
     const legacyPaid = Number(legacy?.paid_amount ?? 0);
-    const legacyBalance = Number(legacy?.balance_amount ?? 0);
-    const effectiveAnnualDue = legacy ? legacyPaid + legacyBalance : annualDue;
-    const effectiveYtdPaid = legacyPaid + ytdPaidSoFar;
-    const remaining = effectiveAnnualDue - effectiveYtdPaid;
+    const legacySurplus = Number(legacy?.surplus_amount ?? 0);
+    const allocation = allocateMandatoryContributions({
+      monthlyRate,
+      goodSamaritanRate,
+      legacyPaid,
+      legacySurplus,
+      monthlyPayments: monthlyPaidSoFar,
+      goodSamaritanPayments: goodSamaritanPaidSoFar,
+    });
+    const remaining = allocation.emitemwaBalance;
 
     if (remaining <= 0) {
       // Annual Emitemwa is fully paid — entire amount goes to GSD
@@ -446,6 +456,61 @@ export async function createContributionProject(
   revalidatePath("/dashboard/archdiocese/projects");
   revalidatePath("/dashboard/parish/contributions");
   redirect(readString(formData, "returnTo") || "/dashboard/archdiocese/projects");
+}
+
+async function getManagedContributionProject(formData: FormData) {
+  const ctx = await requireAuth({ roles: [...PROJECT_ADMIN_ROLES] });
+  const recordId = readString(formData, "recordId");
+  if (!recordId || !ctx.archdioceseId) return { ctx, project: null };
+
+  const { data } = await createAdminClient()
+    .from("contribution_projects")
+    .select("id, archdiocese_id, scope_level, scope_vicariate_id, scope_deanery_id")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (!data || data.archdiocese_id !== ctx.archdioceseId) return { ctx, project: null };
+  if (ctx.level === "vicariate" && data.scope_vicariate_id !== ctx.vicariateId) return { ctx, project: null };
+  if (ctx.level === "deanery" && data.scope_deanery_id !== ctx.deaneryId) return { ctx, project: null };
+  return { ctx, project: data };
+}
+
+export async function updateContributionProjectName(formData: FormData): Promise<RowActionResult> {
+  const name = readString(formData, "name");
+  if (!name) return { error: "A project name is required." };
+  const { project } = await getManagedContributionProject(formData);
+  if (!project) return { error: "Project was not found in your scope." };
+
+  const { error } = await createAdminClient()
+    .from("contribution_projects")
+    .update({ name, updated_at: new Date().toISOString() })
+    .eq("id", project.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/archdiocese/projects");
+  revalidatePath("/dashboard/vicariate/contributions");
+  revalidatePath("/dashboard/parish/contributions");
+}
+
+export async function deleteContributionProject(formData: FormData): Promise<RowActionResult> {
+  const { project } = await getManagedContributionProject(formData);
+  if (!project) return { error: "Project was not found in your scope." };
+
+  const supabase = createAdminClient();
+  const { count } = await supabase
+    .from("project_contribution_payments")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", project.id);
+  if ((count ?? 0) > 0) {
+    return { error: "This project has contribution payments and cannot be deleted." };
+  }
+
+  const { error } = await supabase.from("contribution_projects").delete().eq("id", project.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/archdiocese/projects");
+  revalidatePath("/dashboard/vicariate/contributions");
+  revalidatePath("/dashboard/parish/contributions");
 }
 
 export async function updateParishContributionRates(
