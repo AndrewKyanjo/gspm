@@ -14,6 +14,7 @@ export type MonthlyFinancialData = {
   goodSamaritanTotalCount: number;
   goodSamaritanDue: number;
   goodSamaritanPaid: number;
+  surplus: number;
   arrearsCount: number;
   arrearsTotal: number;
   byParish: Array<{
@@ -24,6 +25,7 @@ export type MonthlyFinancialData = {
     ytdPaid: number;
     annualBalance: number;
     goodSamaritanCleared: boolean;
+    surplus: number;
   }>;
   byContributionType: Array<{ type: string; amount: number }>;
   previousMonthComparison: {
