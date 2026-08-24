@@ -3,9 +3,11 @@ import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/arch
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getArchdioceseDeaneryOverviews } from "@/features/archdiocese/queries";
+import { deleteHierarchyEntity, updateHierarchyEntityName } from "@/features/hierarchy/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 function statusVariant(status: string | null) {
@@ -65,6 +67,19 @@ export default async function ArchdioceseDeaneriesPage() {
         title="Deanery list"
         description="Every deanery row includes its parent vicariate and its downstream parish load."
         rows={deaneries}
+        rowKey={(item) => item.id}
+        actions={context.role === "super_admin" || context.role === "archdiocese_admin" ? {
+          cell: (item) => (
+            <EditDeleteRowActions
+              recordId={item.id}
+              recordType="deanery"
+              initialName={item.name}
+              editAction={updateHierarchyEntityName}
+              deleteAction={deleteHierarchyEntity}
+              deleteDescription={`Delete “${item.name}”? Deaneries with related records cannot be deleted.`}
+            />
+          ),
+        } : undefined}
         columns={[
           {
             header: "Deanery",

@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ImageIcon, RefreshCw, Trash2, Upload, X } from "lucide-react";
+import { Check, ImageIcon, Pencil, RefreshCw, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   clearPastMediaImportStagingAction,
@@ -83,6 +83,13 @@ export function PastMediaImportWorkspace({ media, vicariates, deaneries, parishe
 
   function toggleSelected(id: string) {
     setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  }
+
+  function openEditor(id: string) {
+    const editor = document.getElementById(`media-editor-${id}`) as HTMLDetailsElement | null;
+    if (!editor) return;
+    editor.open = true;
+    editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
@@ -250,6 +257,10 @@ export function PastMediaImportWorkspace({ media, vicariates, deaneries, parishe
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => openEditor(item.id)}>
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
                   <form action={scanPastMediaImportAction}>
                     <input type="hidden" name="importId" value={item.id} />
                     <Button type="submit" variant="secondary" size="sm">
@@ -260,15 +271,15 @@ export function PastMediaImportWorkspace({ media, vicariates, deaneries, parishe
                   <form action={rejectPastMediaImport}>
                     <input type="hidden" name="importId" value={item.id} />
                     <Button type="submit" variant="ghost" size="sm" disabled={item.review_status === "published"}>
-                      <X className="h-4 w-4" />
-                      Reject
+                      <Trash2 className="h-4 w-4 text-error" />
+                      Delete
                     </Button>
                   </form>
                 </div>
               </div>
 
-              <details className="mt-4 rounded-md border border-outline-variant bg-surface p-4">
-                <summary className="cursor-pointer text-sm font-medium text-on-surface">Review media metadata</summary>
+              <details id={`media-editor-${item.id}`} className="mt-4 rounded-md border border-outline-variant bg-surface p-4">
+                <summary className="cursor-pointer text-sm font-medium text-on-surface">Edit name and media metadata</summary>
                 <form action={updatePastMediaImportReview} className="mt-4 grid gap-4">
                   <input type="hidden" name="importId" value={item.id} />
                   <div className="grid gap-4 md:grid-cols-3">

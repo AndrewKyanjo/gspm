@@ -4,9 +4,11 @@ import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getVicariateProjects } from "@/features/vicariate/queries";
+import { deleteProjectRow, updateProjectName } from "@/features/projects/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 const currencyFormatter = new Intl.NumberFormat("en-UG", { style: "currency", currency: "UGX", maximumFractionDigits: 0 });
@@ -48,6 +50,19 @@ export default async function VicariateProjectsPage() {
         <SimpleTable
           title="Project register"
           rows={projects}
+          rowKey={(project) => project.id}
+          actions={{
+            cell: (project) => (
+              <EditDeleteRowActions
+                recordId={project.id}
+                initialName={project.title}
+                nameLabel="Project title"
+                editAction={updateProjectName}
+                deleteAction={deleteProjectRow}
+                deleteDescription={`Delete “${project.title}”? This cannot be undone.`}
+              />
+            ),
+          }}
           columns={[
             { header: "Project", cell: (p) => <Button href={`/dashboard/vicariate/projects/${p.id}`} variant="ghost" className="h-auto px-0 py-0 font-medium">{p.title}</Button> },
             { header: "Parish", cell: (p) => p.parishName ?? "-" },

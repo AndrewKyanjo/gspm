@@ -86,12 +86,13 @@ export type VicariateDocumentItem = {
 };
 
 export type VicariateMediaItem = {
+  id: string;
   path: string;
   name: string;
   parishName: string | null;
   deaneryName: string | null;
   monthLabel: string;
-  category: "vicariate" | "parish";
+  category: "vicariate" | "deanery" | "parish";
   updatedAt: string | null;
   previewUrl: string | null;
 };
@@ -406,6 +407,12 @@ function formatMonthLabel(monthKey: string) {
   return date.toLocaleDateString("en-US", { month: "long", year: "2-digit", timeZone: "UTC" });
 }
 
+function mediaBucketForScope(scopeLevel: string) {
+  if (scopeLevel === "vicariate") return "vicariate-media";
+  if (scopeLevel === "deanery") return "deanery-media";
+  return "parish-media";
+}
+
 export async function getVicariateMediaGroups(
   archdioceseId: string,
   vicariateId: string,
@@ -417,7 +424,8 @@ export async function getVicariateMediaGroups(
       .from("past_media_imports")
       .select("id, title, description, parish_id, deanery_id, final_storage_path, scope_level, captured_on, created_at")
       .eq("review_status", "published")
-      .or(`scope_level.eq.vicariate,and(vicariate_id.eq.${vicariateId},scope_level.eq.parish)`)
+      .eq("vicariate_id", vicariateId)
+      .in("scope_level", ["vicariate", "deanery", "parish"])
       .not("final_storage_path", "is", null)
       .order("created_at", { ascending: false })
       .limit(60),
@@ -430,7 +438,7 @@ export async function getVicariateMediaGroups(
     const createdAt = item.created_at ?? new Date().toISOString();
     const monthKey = createdAt.slice(0, 7); // YYYY-MM
     const storagePath = String(item.final_storage_path);
-    const bucket = item.scope_level === "vicariate" ? "vicariate-media" : "parish-media";
+    const bucket = mediaBucketForScope(String(item.scope_level));
 
     let previewUrl: string | null = null;
     try {
@@ -451,12 +459,18 @@ export async function getVicariateMediaGroups(
         : null;
 
     const mediaItem: VicariateMediaItem = {
+      id: item.id,
       path: storagePath,
       name: item.title ?? "Media",
       parishName,
       deaneryName,
       monthLabel: formatMonthLabel(monthKey),
-      category: item.scope_level === "vicariate" ? "vicariate" : "parish",
+      category:
+        item.scope_level === "vicariate"
+          ? "vicariate"
+          : item.scope_level === "deanery"
+            ? "deanery"
+            : "parish",
       updatedAt: createdAt,
       previewUrl,
     };
@@ -501,8 +515,8 @@ export async function getVicariateSettingsOverview(
   const assignments = assignmentsResult.data ?? [];
   const userIds = [...new Set(assignments.map((a) => a.user_id).filter(Boolean))] as string[];
 
-  let profileMap = new Map<string, { fullName: string | null; email: string | null }>();
-  let roleMap = new Map<string, string>();
+  const profileMap = new Map<string, { fullName: string | null; email: string | null }>();
+  const roleMap = new Map<string, string>();
 
   if (userIds.length > 0) {
     const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);

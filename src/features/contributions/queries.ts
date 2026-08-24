@@ -1,5 +1,6 @@
 import { buildHierarchyMaps, getHierarchyCollections, type HierarchyScope } from "@/lib/db/queries/hierarchy";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { allocateMandatoryContributions } from "./calculations";
 import type {
   ContributionReportRow,
   ContributionRollupReport,
@@ -72,7 +73,7 @@ async function getParishContext(parishId: string) {
   const supabase = createAdminClient();
   const { data: parish } = await supabase
     .from("parishes")
-    .select("id, name, archdiocese_id, vicariate_id, deanery_id")
+    .select("id, name, archdiocese_id, vicariate_id, deanery_id, monthly_emitemwa_amount, good_samaritan_day_amount")
     .eq("id", parishId)
     .maybeSingle();
 
@@ -172,8 +173,12 @@ export async function getParishContributionDashboard(
   if (!context) return null;
 
   const { parish, vicariate, deanery } = context;
-  const monthlyRate = numberValue(vicariate?.monthly_emitemwa_amount ?? 50000);
-  const goodSamaritanRate = numberValue(vicariate?.good_samaritan_day_amount ?? 250000);
+  const monthlyRate = numberValue(
+    parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
+  );
+  const goodSamaritanRate = numberValue(
+    parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
+  );
 
   const supabase = createAdminClient();
   const [paymentsResult, legacyResult, projects] = await Promise.all([
@@ -185,7 +190,7 @@ export async function getParishContributionDashboard(
       .order("paid_on", { ascending: false }),
     supabase
       .from("contribution_legacy_opening_balances")
-      .select("source_parish_name, paid_amount, balance_amount")
+      .select("*")
       .eq("parish_id", parishId)
       .eq("snapshot_year", year)
       .order("imported_at", { ascending: false })
@@ -215,12 +220,17 @@ export async function getParishContributionDashboard(
   });
 
   const monthlyPaidTotal = months.reduce((total, month) => total + month.paid, 0);
-  const monthlyAnnualDue = monthlyRate * 12;
-  const goodSamaritanPaid = sumRows(gsdRows, "amount");
+  const directGoodSamaritanPaid = sumRows(gsdRows, "amount");
   const legacyPaid = legacyResult.data ? numberValue(legacyResult.data.paid_amount) : 0;
-  const legacyBalance = legacyResult.data ? numberValue(legacyResult.data.balance_amount) : 0;
-  const effectiveAnnualDue = legacyResult.data ? legacyPaid + legacyBalance : monthlyAnnualDue;
-  const effectivePaidTotal = legacyPaid + monthlyPaidTotal;
+  const legacySurplus = legacyResult.data ? numberValue(legacyResult.data.surplus_amount) : 0;
+  const allocation = allocateMandatoryContributions({
+    monthlyRate,
+    goodSamaritanRate,
+    legacyPaid,
+    legacySurplus,
+    monthlyPayments: monthlyPaidTotal,
+    goodSamaritanPayments: directGoodSamaritanPaid,
+  });
 
   return {
     parishId,
@@ -231,14 +241,17 @@ export async function getParishContributionDashboard(
     monthlyRate,
     goodSamaritanRate,
     months,
-    monthlyPaidTotal: effectivePaidTotal,
-    monthlyAnnualDue: effectiveAnnualDue,
-    monthlyAnnualBalance: Math.max(effectiveAnnualDue - effectivePaidTotal, 0),
+    monthlyPaidTotal: allocation.emitemwaApplied,
+    monthlyAnnualDue: allocation.annualEmitemwaDue,
+    monthlyAnnualBalance: allocation.emitemwaBalance,
+    surplus: allocation.surplus,
     goodSamaritan: {
-      due: goodSamaritanRate,
-      paid: goodSamaritanPaid,
-      balance: Math.max(goodSamaritanRate - goodSamaritanPaid, 0),
-      cleared: goodSamaritanPaid >= goodSamaritanRate,
+      due: allocation.goodSamaritanDue,
+      paid: allocation.goodSamaritanApplied,
+      balance: allocation.goodSamaritanBalance,
+      cleared: allocation.goodSamaritanBalance === 0,
+      recordedDirectly: allocation.goodSamaritanRecorded,
+      allocatedFromEmitemwaExcess: allocation.emitemwaExcessAppliedToGoodSamaritan,
     },
     payments,
     projects,
@@ -247,6 +260,7 @@ export async function getParishContributionDashboard(
           sourceParishName: legacyResult.data.source_parish_name,
           paidAmount: numberValue(legacyResult.data.paid_amount),
           balanceAmount: numberValue(legacyResult.data.balance_amount),
+          surplusAmount: legacySurplus,
         }
       : null,
   };
@@ -284,11 +298,13 @@ export async function getContributionRollupReport({
       totals: {
         monthPaid: 0,
         ytdPaid: 0,
+        totalRecorded: 0,
         annualDue: 0,
         annualBalance: 0,
         goodSamaritanDue: 0,
         goodSamaritanPaid: 0,
         goodSamaritanClearedCount: 0,
+        surplus: 0,
       },
     };
   }
@@ -304,7 +320,7 @@ export async function getContributionRollupReport({
       .order("paid_on", { ascending: false }),
     supabase
       .from("contribution_legacy_opening_balances")
-      .select("parish_id, paid_amount, balance_amount, snapshot_year")
+      .select("*")
       .in("parish_id", parishIds)
       .eq("snapshot_year", year),
   ]);
@@ -316,14 +332,19 @@ export async function getContributionRollupReport({
       {
         paid: numberValue(row.paid_amount),
         balance: numberValue(row.balance_amount),
+        surplus: numberValue(row.surplus_amount),
       },
     ]),
   );
   const rows: ContributionReportRow[] = parishes.map((parish) => {
     const vicariate = maps.vicariatesById.get(parish.vicariate_id);
     const deanery = maps.deaneriesById.get(parish.deanery_id);
-    const monthlyDue = numberValue(vicariate?.monthly_emitemwa_amount ?? 50000);
-    const goodSamaritanDue = numberValue(vicariate?.good_samaritan_day_amount ?? 250000);
+    const monthlyDue = numberValue(
+      parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
+    );
+    const goodSamaritanDue = numberValue(
+      parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
+    );
     const parishPayments = paymentRows.filter((payment) => payment.parish_id === parish.id);
     const monthlyPayments = parishPayments.filter((payment) => payment.payment_kind === "monthly");
     const monthPayments = monthlyPayments.filter((payment) => Number(payment.contribution_month) === month);
@@ -332,9 +353,16 @@ export async function getContributionRollupReport({
     const legacy = legacyByParish.get(parish.id);
     const legacyPaid = legacy?.paid ?? 0;
     const legacyBalance = legacy?.balance ?? 0;
-    const ytdPaid = legacyPaid + currentYearMonthlyPaid;
-    const annualDue = legacy ? legacyPaid + legacyBalance : monthlyDue * 12;
-    const goodSamaritanPaid = gsdPayments.reduce((total, payment) => total + numberValue(payment.amount), 0);
+    const legacySurplus = legacy?.surplus ?? 0;
+    const directGoodSamaritanPaid = gsdPayments.reduce((total, payment) => total + numberValue(payment.amount), 0);
+    const allocation = allocateMandatoryContributions({
+      monthlyRate: monthlyDue,
+      goodSamaritanRate: goodSamaritanDue,
+      legacyPaid,
+      legacySurplus,
+      monthlyPayments: currentYearMonthlyPaid,
+      goodSamaritanPayments: directGoodSamaritanPaid,
+    });
 
     return {
       parishId: parish.id,
@@ -343,15 +371,20 @@ export async function getContributionRollupReport({
       vicariateName: vicariate?.name ? String(vicariate.name) : null,
       legacyPaid,
       legacyBalance,
+      legacySurplus,
       hasLegacyOpeningBalance: Boolean(legacy),
       monthlyDue,
       monthPaid: monthPayments.reduce((total, payment) => total + numberValue(payment.amount), 0),
-      ytdPaid,
-      annualDue,
-      annualBalance: Math.max(annualDue - ytdPaid, 0),
-      goodSamaritanDue,
-      goodSamaritanPaid,
-      goodSamaritanCleared: goodSamaritanPaid >= goodSamaritanDue,
+      ytdPaid: allocation.emitemwaApplied,
+      totalRecorded: allocation.totalRecorded,
+      annualDue: allocation.annualEmitemwaDue,
+      annualBalance: allocation.emitemwaBalance,
+      goodSamaritanDue: allocation.goodSamaritanDue,
+      goodSamaritanPaid: allocation.goodSamaritanApplied,
+      goodSamaritanRecorded: allocation.goodSamaritanRecorded,
+      emitemwaExcessAllocated: allocation.emitemwaExcessAppliedToGoodSamaritan,
+      goodSamaritanCleared: allocation.goodSamaritanBalance === 0,
+      surplus: allocation.surplus,
       payments: parishPayments
         .filter((payment) => {
           if (payment.payment_kind === "monthly") {
@@ -368,21 +401,25 @@ export async function getContributionRollupReport({
     (acc, row) => ({
       monthPaid: acc.monthPaid + row.monthPaid,
       ytdPaid: acc.ytdPaid + row.ytdPaid,
+      totalRecorded: acc.totalRecorded + row.totalRecorded,
       annualDue: acc.annualDue + row.annualDue,
       annualBalance: acc.annualBalance + row.annualBalance,
       goodSamaritanDue: acc.goodSamaritanDue + row.goodSamaritanDue,
       goodSamaritanPaid: acc.goodSamaritanPaid + row.goodSamaritanPaid,
       goodSamaritanClearedCount:
         acc.goodSamaritanClearedCount + (row.goodSamaritanCleared ? 1 : 0),
+      surplus: acc.surplus + row.surplus,
     }),
     {
       monthPaid: 0,
       ytdPaid: 0,
+      totalRecorded: 0,
       annualDue: 0,
       annualBalance: 0,
       goodSamaritanDue: 0,
       goodSamaritanPaid: 0,
       goodSamaritanClearedCount: 0,
+      surplus: 0,
     },
   );
 
@@ -521,7 +558,7 @@ export async function getExcessParishes(
       .eq("contribution_year", year),
     supabase
       .from("contribution_legacy_opening_balances")
-      .select("parish_id, paid_amount, balance_amount")
+      .select("*")
       .in("parish_id", parishIds)
       .eq("snapshot_year", year),
   ]);
@@ -530,7 +567,10 @@ export async function getExcessParishes(
   const legacyByParish = new Map(
     ((legacyResult.data ?? []) as GenericRow[]).map((row) => [
       String(row.parish_id),
-      { paid: numberValue(row.paid_amount), balance: numberValue(row.balance_amount) },
+      {
+        paid: numberValue(row.paid_amount),
+        surplus: numberValue(row.surplus_amount),
+      },
     ]),
   );
 
@@ -539,28 +579,41 @@ export async function getExcessParishes(
   for (const parish of parishes) {
     const vicariate = maps.vicariatesById.get(parish.vicariate_id);
     const deanery = maps.deaneriesById.get(parish.deanery_id);
-    const monthlyDue = numberValue(vicariate?.monthly_emitemwa_amount ?? 50000);
-    const goodSamaritanDue = numberValue(vicariate?.good_samaritan_day_amount ?? 250000);
-    const annualEmitemwaDue = monthlyDue * 12;
+    const monthlyDue = numberValue(
+      parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
+    );
+    const goodSamaritanDue = numberValue(
+      parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
+    );
     const legacy = legacyByParish.get(parish.id);
-    const effectiveAnnualDue = legacy ? legacy.paid + legacy.balance : annualEmitemwaDue;
-    const combinedDue = effectiveAnnualDue + goodSamaritanDue;
-
     const parishPayments = paymentRows.filter((p) => p.parish_id === parish.id);
-    const totalPaid = parishPayments.reduce((sum, p) => sum + numberValue(p.amount), 0);
+    const monthlyPayments = parishPayments
+      .filter((payment) => payment.payment_kind === "monthly")
+      .reduce((sum, payment) => sum + numberValue(payment.amount), 0);
+    const goodSamaritanPayments = parishPayments
+      .filter((payment) => payment.payment_kind === "good_samaritan_day")
+      .reduce((sum, payment) => sum + numberValue(payment.amount), 0);
+    const allocation = allocateMandatoryContributions({
+      monthlyRate: monthlyDue,
+      goodSamaritanRate: goodSamaritanDue,
+      legacyPaid: legacy?.paid ?? 0,
+      legacySurplus: legacy?.surplus ?? 0,
+      monthlyPayments,
+      goodSamaritanPayments,
+    });
+    const combinedDue = allocation.annualEmitemwaDue + allocation.goodSamaritanDue;
 
-    const excess = totalPaid - combinedDue;
-    if (excess > 0) {
+    if (allocation.surplus > 0) {
       results.push({
         parishId: parish.id,
         parishName: parish.name,
         deaneryName: deanery?.name ?? null,
         vicariateName: vicariate?.name ?? null,
-        annualEmitemwaDue: effectiveAnnualDue,
-        goodSamaritanDue,
+        annualEmitemwaDue: allocation.annualEmitemwaDue,
+        goodSamaritanDue: allocation.goodSamaritanDue,
         combinedDue,
-        totalPaid,
-        excess,
+        totalPaid: allocation.totalRecorded,
+        excess: allocation.surplus,
       });
     }
   }

@@ -6,7 +6,9 @@ import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Button } from "@/components/ui/button";
+import { deleteDocument, updateDocumentName } from "@/features/documents/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -212,6 +214,20 @@ export default async function ArchdioceseDocumentsPage() {
           title="Document library"
           description="Documents uploaded at the deanery level and visible to the executive console."
           rows={documents}
+          rowKey={(item) => `${item.scope}-${item.id}`}
+          actions={{
+            cell: (item) => (
+              <EditDeleteRowActions
+                recordId={item.id}
+                recordType={item.scope.toLowerCase()}
+                initialName={item.title}
+                nameLabel="Document title"
+                editAction={updateDocumentName}
+                deleteAction={deleteDocument}
+                deleteDescription={`Delete “${item.title}” and its stored file?`}
+              />
+            ),
+          }}
           columns={[
             {
               header: "Document",

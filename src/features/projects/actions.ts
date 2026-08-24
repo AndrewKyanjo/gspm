@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canProxyEnterForScope } from "@/lib/permissions/access";
+import type { RowActionResult } from "@/components/dashboard/shared/edit-delete-row-actions";
 import type { BulkCreateProjectsInput, BulkCreateProjectsResult } from "./types";
 
 const BULK_CREATE_ROLES = [
@@ -147,4 +148,49 @@ export async function deleteProject(id: string): Promise<{ error: string | null 
   revalidatePath("/dashboard/deanery/projects");
   revalidatePath("/dashboard/parish/projects");
   return { error: null };
+}
+
+export async function updateProjectName(formData: FormData): Promise<RowActionResult> {
+  const ctx = await requireAuth({ roles: [...BULK_CREATE_ROLES] });
+  const recordId = String(formData.get("recordId") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!recordId || !name) return { error: "A project title is required." };
+
+  const supabase = createAdminClient();
+  const { data: project } = await supabase
+    .from("parish_projects")
+    .select("id, archdiocese_id, parish_id, vicariate_id, deanery_id")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (
+    !project ||
+    project.archdiocese_id !== ctx.archdioceseId ||
+    (ctx.level !== "archdiocese" &&
+      !canProxyEnterForScope(ctx, {
+        parishId: project.parish_id,
+        vicariateId: project.vicariate_id,
+        deaneryId: project.deanery_id,
+      }))
+  ) {
+    return { error: "Project was not found in your scope." };
+  }
+
+  const { error } = await supabase
+    .from("parish_projects")
+    .update({ title: name, updated_at: new Date().toISOString() })
+    .eq("id", project.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/archdiocese/projects");
+  revalidatePath("/dashboard/vicariate/projects");
+  revalidatePath("/dashboard/deanery/projects");
+  revalidatePath("/dashboard/parish/projects");
+}
+
+export async function deleteProjectRow(formData: FormData): Promise<RowActionResult> {
+  const recordId = String(formData.get("recordId") ?? "").trim();
+  if (!recordId) return { error: "Project was not found." };
+  const result = await deleteProject(recordId);
+  return result.error ? { error: result.error } : undefined;
 }

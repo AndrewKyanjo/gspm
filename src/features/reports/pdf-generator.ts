@@ -8,6 +8,7 @@
 
 import path from "path";
 import fs from "fs";
+import PDFDocument from "pdfkit";
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -33,14 +34,17 @@ function formatCurrency(amount: number | null | undefined): string {
   }).format(amount);
 }
 
-/** Format a date string to a readable locale date */
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString("en-UG", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+function numberValue(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
 }
 
 // ── Report Types ───────────────────────────────────────────
@@ -86,10 +90,8 @@ export type MonthlyReportInput = {
 export async function generateContributionReportPDF(input: ContributionReportInput): Promise<Buffer> {
   const logo = getLogoBuffer();
 
-  return new Promise((resolve, reject) => {
-    // Use a PassThrough-like approach with pdfkit
-    const Pdfkit = require("pdfkit");
-    const doc = new Pdfkit({ size: "A4", layout: "landscape", margin: 30 });
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 30 });
     const buffers: Buffer[] = [];
     doc.on("data", (chunk: Buffer) => buffers.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(buffers)));
@@ -172,8 +174,7 @@ export async function generateContributionReportPDF(input: ContributionReportInp
  */
 export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promise<Buffer> {
   const logo = getLogoBuffer();
-  const Pdfkit = require("pdfkit");
-  const doc = new Pdfkit({ size: "A4", margin: 40 });
+  const doc = new PDFDocument({ size: "A4", margin: 40 });
   const buffers: Buffer[] = [];
   doc.on("data", (chunk: Buffer) => buffers.push(chunk));
   const pdfPromise = new Promise<Buffer>((resolve) => {
@@ -196,14 +197,14 @@ export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promi
   // Financial Section
   doc.fontSize(11).font("Helvetica-Bold").text("Financial Summary", 40, y);
   y += 20;
-  const fin = input.financialData as Record<string, any>;
-  if (fin) {
+  const fin = input.financialData;
+  if (Object.keys(fin).length > 0) {
     doc.fontSize(9).font("Helvetica");
     const items = [
-      ["Total Emitemwa Collected", formatCurrency(fin.totalEmitemwaAmount)],
-      ["Good Samaritan Day Collected", formatCurrency(fin.totalGsdAmount)],
-      ["Project Contributions", formatCurrency(fin.totalProjectAmount)],
-      ["Arrears Outstanding", formatCurrency(fin.totalArrears)],
+      ["Total Emitemwa Collected", formatCurrency(numberValue(fin.totalEmitemwaPaid ?? fin.totalEmitemwaAmount))],
+      ["Good Samaritan Day Collected", formatCurrency(numberValue(fin.goodSamaritanPaid ?? fin.totalGsdAmount))],
+      ["Project Contributions", formatCurrency(numberValue(input.projectData.totalRaisedThisMonth ?? fin.totalProjectAmount))],
+      ["Arrears Outstanding", formatCurrency(numberValue(fin.arrearsTotal ?? fin.totalArrears))],
     ] as const;
     items.forEach(([label, value]) => {
       doc.text(label, 50, y, { width: 300 });
@@ -216,12 +217,13 @@ export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promi
   // Project Section
   doc.fontSize(11).font("Helvetica-Bold").text("Projects", 40, y);
   y += 20;
-  const proj = input.projectData as Record<string, any>;
-  if (proj?.projects && Array.isArray(proj.projects)) {
+  const projects = input.projectData.byProject ?? input.projectData.projects;
+  if (Array.isArray(projects)) {
     doc.fontSize(9).font("Helvetica");
-    (proj.projects as any[]).forEach((p: any) => {
-      doc.text(`${p.name ?? p.title ?? "Project"}`, 50, y, { width: 300 });
-      doc.text(formatCurrency(p.amountRaised ?? p.total ?? 0), 350, y, { width: 150, align: "right" });
+    projects.forEach((project) => {
+      const row = recordValue(project);
+      doc.text(String(row.name ?? row.title ?? "Project"), 50, y, { width: 300 });
+      doc.text(formatCurrency(numberValue(row.raisedThisMonth ?? row.amountRaised ?? row.total)), 350, y, { width: 150, align: "right" });
       y += 16;
     });
   }
@@ -230,11 +232,12 @@ export async function generateMonthlyReportPDF(input: MonthlyReportInput): Promi
   // Document Section
   doc.fontSize(11).font("Helvetica-Bold").text("Documents", 40, y);
   y += 20;
-  const docs = input.documentData as Record<string, any>;
-  if (docs?.documents && Array.isArray(docs.documents)) {
+  const documents = input.documentData.documents;
+  if (Array.isArray(documents)) {
     doc.fontSize(9).font("Helvetica");
-    (docs.documents as any[]).forEach((d: any) => {
-      doc.text(`${d.title ?? d.name ?? "Document"}`, 50, y, { width: 400 });
+    documents.forEach((document) => {
+      const row = recordValue(document);
+      doc.text(String(row.title ?? row.name ?? "Document"), 50, y, { width: 400 });
       y += 14;
     });
   } else {

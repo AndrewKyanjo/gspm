@@ -1,4 +1,4 @@
-import { CalendarCheck, HandCoins, ReceiptText } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, HandCoins, ReceiptText } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
@@ -55,15 +55,16 @@ export default async function VicariateContributionsPage({
         description="Roll-up report across every parish assigned to this vicariate."
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-4">
         <StatCard label="Month paid" value={currencyFormatter.format(report.totals.monthPaid)} helper="Selected month" icon={HandCoins} />
-        <StatCard label="YTD paid" value={currencyFormatter.format(report.totals.ytdPaid)} helper="Monthly Emitemwa only" icon={ReceiptText} />
+        <StatCard label="Emitemwa applied" value={currencyFormatter.format(report.totals.ytdPaid)} helper="Capped at annual obligations" icon={ReceiptText} />
         <StatCard
           label="Good Samaritan cleared"
           value={`${report.totals.goodSamaritanClearedCount}/${report.rows.length}`}
           helper="Parish count"
           icon={CalendarCheck}
         />
+        <StatCard label="Parish surplus" value={currencyFormatter.format(report.totals.surplus)} helper="After both obligations" icon={CircleDollarSign} />
       </section>
 
       <SimpleTable
@@ -80,13 +81,23 @@ export default async function VicariateContributionsPage({
             ),
           },
           { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
-          { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
+          { header: "Total recorded", cell: (row) => currencyFormatter.format(row.totalRecorded) },
+          { header: "Emitemwa applied", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
           {
             header: "Good Samaritan",
             cell: (row) =>
-              row.goodSamaritanCleared ? <Badge variant="success">Cleared</Badge> : <Badge variant="warning">Open</Badge>,
+              <div className="space-y-1">
+                <Badge variant={row.goodSamaritanCleared ? "success" : "warning"}>
+                  {row.goodSamaritanCleared ? "Cleared" : "Open"}
+                </Badge>
+                <div className="text-xs text-on-surface-variant">
+                  {currencyFormatter.format(row.goodSamaritanPaid)} / {currencyFormatter.format(row.goodSamaritanDue)}
+                </div>
+              </div>,
           },
+          { header: "Surplus", cell: (row) => row.surplus > 0 ? <Badge variant="success">+{currencyFormatter.format(row.surplus)}</Badge> : "-" },
+          { header: "Overall", cell: (row) => row.annualBalance === 0 && row.goodSamaritanCleared ? <Badge variant="success">Cleared</Badge> : <Badge variant="warning">Outstanding</Badge> },
         ]}
       />
 
