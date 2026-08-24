@@ -1,4 +1,4 @@
-import { CalendarCheck, CircleDollarSign, HandCoins, ReceiptText } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, HandCoins, ReceiptText, WalletCards } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
@@ -59,7 +59,7 @@ export default async function ParishContributionsPage({
         description={`${dashboard.vicariateName ?? "Vicariate"} rate: ${currencyFormatter.format(dashboard.monthlyRate)} per month, ${currencyFormatter.format(dashboard.goodSamaritanRate)} for Good Samaritan Day.`}
       />
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-5">
         <StatCard
           label="Emitemwa paid"
           value={currencyFormatter.format(dashboard.monthlyPaidTotal)}
@@ -84,11 +84,17 @@ export default async function ParishContributionsPage({
           helper="Available for this parish"
           icon={CircleDollarSign}
         />
+        <StatCard
+          label="Surplus credit"
+          value={currencyFormatter.format(dashboard.surplus)}
+          helper="After Emitemwa and Good Samaritan Day"
+          icon={WalletCards}
+        />
       </section>
 
       {dashboard.legacyOpeningBalance ? (
         <div className="rounded-md border border-outline-variant bg-surface-container-lowest p-4 text-sm text-on-surface">
-          Legacy snapshot imported for {dashboard.legacyOpeningBalance.sourceParishName}:{" "}
+          Normalized legacy snapshot for {dashboard.legacyOpeningBalance.sourceParishName}:{" "}
           <span className="font-semibold">
             {currencyFormatter.format(dashboard.legacyOpeningBalance.paidAmount)} paid
           </span>{" "}
@@ -96,13 +102,21 @@ export default async function ParishContributionsPage({
           <span className="font-semibold">
             {currencyFormatter.format(dashboard.legacyOpeningBalance.balanceAmount)} balance
           </span>
+          {dashboard.legacyOpeningBalance.surplusAmount > 0 ? (
+            <>
+              {" "}and{" "}
+              <span className="font-semibold">
+                {currencyFormatter.format(dashboard.legacyOpeningBalance.surplusAmount)} surplus
+              </span>
+            </>
+          ) : null}
           .
         </div>
       ) : null}
 
       <SimpleTable
         title="Monthly Emitemwa status"
-        description="Each month compares logged payments against the vicariate monthly rate."
+        description="Each month compares logged payments against this parish's effective monthly rate."
         rows={dashboard.months}
         columns={[
           { header: "Month", cell: (item) => <span className="font-medium">{item.label}</span> },

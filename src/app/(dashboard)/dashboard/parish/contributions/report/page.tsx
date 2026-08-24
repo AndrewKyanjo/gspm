@@ -63,7 +63,7 @@ export default async function ParishContributionReportPage({
           <p className="mt-2 text-2xl font-semibold text-on-surface">{currencyFormatter.format(report.totals.monthPaid)}</p>
         </div>
         <div className="rounded-md border border-outline-variant bg-surface-container-lowest p-4">
-          <p className="text-sm text-on-surface-variant">YTD paid</p>
+          <p className="text-sm text-on-surface-variant">Emitemwa applied</p>
           <p className="mt-2 text-2xl font-semibold text-on-surface">{currencyFormatter.format(report.totals.ytdPaid)}</p>
         </div>
         <div className="rounded-md border border-outline-variant bg-surface-container-lowest p-4">
@@ -84,7 +84,7 @@ export default async function ParishContributionReportPage({
         columns={[
           { header: "Parish", cell: (row) => <span className="font-medium">{row.parishName}</span> },
           { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
-          { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
+          { header: "Emitemwa applied", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
           {
             header: "Good Samaritan Day",
