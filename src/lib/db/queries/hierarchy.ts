@@ -77,7 +77,7 @@ export async function getHierarchyCollections(scope: HierarchyScope = {}): Promi
   const parishQuery = applyHierarchyScope(
     supabase
       .from("parishes")
-      .select("id, name, archdiocese_id, vicariate_id, deanery_id, code, status")
+      .select("id, name, archdiocese_id, vicariate_id, deanery_id, code, status, monthly_emitemwa_amount, good_samaritan_day_amount")
       .order("name", { ascending: true }),
     scope,
     ["archdioceseId", "vicariateId", "deaneryId", "parishId"]
