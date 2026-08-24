@@ -5,7 +5,7 @@ import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintButton } from "@/components/dashboard/shared/print-button";
 import { getMonthlyReport } from "@/features/reports/queries";
 import { publishMonthlyReport } from "@/features/reports/actions";
@@ -62,7 +62,7 @@ export default async function MonthlyReportDetailPage({ params }: Props) {
         </h2>
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard label="Emitemwa paid" value={currencyFormatter.format(financialData.totalEmitemwaPaid)} helper={`${MONTH_LABELS[report.reportMonth - 1]} payments`} icon={HandCoins} />
-          <StatCard label="YTD paid" value={currencyFormatter.format(financialData.ytdPaid)} helper="Year to date" icon={TrendingUp} />
+          <StatCard label="Emitemwa applied" value={currencyFormatter.format(financialData.ytdPaid)} helper="Applied to annual obligations" icon={TrendingUp} />
           <StatCard label="Annual balance" value={currencyFormatter.format(financialData.totalAnnualBalance)} helper="Outstanding across all parishes" icon={Activity} />
           <StatCard label="G.S.D. cleared" value={`${financialData.goodSamaritanClearedCount}/${financialData.goodSamaritanTotalCount}`} helper="Good Samaritan Day clearances" icon={CalendarCheck} />
         </div>
@@ -87,9 +87,10 @@ export default async function MonthlyReportDetailPage({ params }: Props) {
               { header: "Parish", cell: (p) => <span className="font-medium">{p.parishName}</span> },
               { header: "Deanery", cell: (p) => p.deaneryName ?? "-" },
               { header: "Month paid", cell: (p) => currencyFormatter.format(p.monthPaid) },
-              { header: "YTD paid", cell: (p) => currencyFormatter.format(p.ytdPaid) },
+              { header: "Emitemwa applied", cell: (p) => currencyFormatter.format(p.ytdPaid) },
               { header: "Balance", cell: (p) => currencyFormatter.format(p.annualBalance) },
               { header: "G.S.D.", cell: (p) => p.goodSamaritanCleared ? <Badge variant="success">Cleared</Badge> : <Badge variant="warning">Due</Badge> },
+              { header: "Surplus", cell: (p) => p.surplus > 0 ? <Badge variant="success">+{currencyFormatter.format(p.surplus)}</Badge> : "-" },
             ]}
           />
         )}
