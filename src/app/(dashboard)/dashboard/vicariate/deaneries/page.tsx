@@ -1,10 +1,12 @@
 import { Landmark, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { VicariateShell } from "@/components/dashboard/vicariate/shared/vicariate-shell";
 import { Badge } from "@/components/ui/badge";
 import { getHierarchyCollections } from "@/lib/db/queries/hierarchy";
+import { deleteHierarchyEntity, updateHierarchyEntityName } from "@/features/hierarchy/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 function statusVariant(status: string | null) {
@@ -59,6 +61,19 @@ export default async function VicariateDeaneriesPage() {
       <SimpleTable
         title="Deanery registry"
         rows={rows}
+        rowKey={(row) => row.id}
+        actions={{
+          cell: (row) => (
+            <EditDeleteRowActions
+              recordId={row.id}
+              recordType="deanery"
+              initialName={row.name}
+              editAction={updateHierarchyEntityName}
+              deleteAction={deleteHierarchyEntity}
+              deleteDescription={`Delete “${row.name}”? Deaneries with related records cannot be deleted.`}
+            />
+          ),
+        }}
         columns={[
           {
             header: "Deanery",
