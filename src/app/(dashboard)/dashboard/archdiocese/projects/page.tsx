@@ -4,9 +4,11 @@ import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getContributionProjectOverviews } from "@/features/contributions/queries";
+import { deleteContributionProject, updateContributionProjectName } from "@/features/contributions/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 const currencyFormatter = new Intl.NumberFormat("en-UG", {
@@ -64,6 +66,19 @@ export default async function ArchdioceseProjectsPage() {
         <SimpleTable
           title="Project registry"
           rows={projects}
+          rowKey={(project) => project.id}
+          actions={{
+            cell: (project) => (
+              <EditDeleteRowActions
+                recordId={project.id}
+                initialName={project.name}
+                nameLabel="Project name"
+                editAction={updateContributionProjectName}
+                deleteAction={deleteContributionProject}
+                deleteDescription={`Delete “${project.name}”? Projects with payments cannot be deleted.`}
+              />
+            ),
+          }}
           columns={[
             {
               header: "Project",
