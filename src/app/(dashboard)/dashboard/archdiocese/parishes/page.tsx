@@ -4,9 +4,11 @@ import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getArchdioceseParishOverviews } from "@/features/archdiocese/queries";
+import { deleteHierarchyEntity, updateHierarchyEntityName } from "@/features/hierarchy/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 type ArchdioceseParishesPageProps = {
@@ -86,6 +88,19 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
           title="Parish register"
           description="Operational visibility across the full hierarchy."
           rows={filtered}
+          rowKey={(item) => item.id}
+          actions={context.role === "super_admin" || context.role === "archdiocese_admin" ? {
+            cell: (item) => (
+              <EditDeleteRowActions
+                recordId={item.id}
+                recordType="parish"
+                initialName={item.name}
+                editAction={updateHierarchyEntityName}
+                deleteAction={deleteHierarchyEntity}
+                deleteDescription={`Delete “${item.name}”? Parishes with related records cannot be deleted.`}
+              />
+            ),
+          } : undefined}
           columns={[
             {
               header: "Parish",
