@@ -262,7 +262,8 @@ async function main() {
     requireNoError(
       "Upsert legacy opening balances",
       await supabase.from("contribution_legacy_opening_balances").upsert(matched, {
-        onConflict: "parish_id,source_label",
+        // One authoritative opening snapshot per parish and contribution year.
+        onConflict: "parish_id,snapshot_year",
       }),
     );
   }

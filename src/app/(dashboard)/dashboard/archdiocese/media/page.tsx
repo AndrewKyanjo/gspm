@@ -1,14 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 // src/app/(dashboard)/dashboard/archdiocese/media/page.tsx
 import { Image, FolderOpen, Upload } from "lucide-react";
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Button } from "@/components/ui/button";
+import { deletePublishedMedia, updatePublishedMediaName } from "@/features/media/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type MediaItem = {
+export type MediaItem = {
   id: string;
   title: string;
   description: string | null;
@@ -18,6 +21,7 @@ type MediaItem = {
   previewUrl: string | null;
   capturedOn: string | null;
   createdAt: string;
+  source: "import" | "project";
 };
 
 function bucketForScope(scopeLevel: string) {
@@ -94,6 +98,7 @@ async function getArchdioceseMedia(archdioceseId: string): Promise<MediaItem[]> 
         previewUrl: signedUrl?.signedUrl ?? null,
         capturedOn: item.captured_on ?? null,
         createdAt: item.created_at,
+        source: "import" as const,
       } satisfies MediaItem;
     }),
   );
@@ -108,6 +113,7 @@ async function getArchdioceseMedia(archdioceseId: string): Promise<MediaItem[]> 
     previewUrl: p.cover_image_path,
     capturedOn: null,
     createdAt: p.created_at,
+    source: "project" as const,
   }));
 
   return [...importedItems, ...projectItems].sort(
@@ -172,10 +178,6 @@ export default async function ArchdioceseMediaPage() {
                   src={item.previewUrl ?? item.storagePath}
                   alt={item.title}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                  }}
                 />
                 <span className="material-symbols-outlined text-4xl text-outline hidden">
                   image_not_supported
@@ -196,6 +198,20 @@ export default async function ArchdioceseMediaPage() {
                       ? new Date(item.createdAt).toLocaleDateString()
                     : ""}
                 </p>
+                <div className="mt-3 border-t border-outline-variant pt-2">
+                  {item.source === "import" ? (
+                    <EditDeleteRowActions
+                      recordId={item.id}
+                      initialName={item.title}
+                      nameLabel="Media name"
+                      editAction={updatePublishedMediaName}
+                      deleteAction={deletePublishedMedia}
+                      deleteDescription={`Delete “${item.title}” from the media library and storage?`}
+                    />
+                  ) : (
+                    <p className="text-right text-xs text-on-surface-variant">Edit from the project record</p>
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -4,9 +4,11 @@ import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getVicariateParishOverviews } from "@/features/vicariate/queries";
+import { deleteHierarchyEntity, updateHierarchyEntityName } from "@/features/hierarchy/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 const currencyFormatter = new Intl.NumberFormat("en-UG", { style: "currency", currency: "UGX", maximumFractionDigits: 0 });
@@ -48,6 +50,19 @@ export default async function VicariateParishesPage() {
         <SimpleTable
           title="Parish register"
           rows={parishes}
+          rowKey={(parish) => parish.id}
+          actions={{
+            cell: (parish) => (
+              <EditDeleteRowActions
+                recordId={parish.id}
+                recordType="parish"
+                initialName={parish.name}
+                editAction={updateHierarchyEntityName}
+                deleteAction={deleteHierarchyEntity}
+                deleteDescription={`Delete “${parish.name}”? Parishes with related records cannot be deleted.`}
+              />
+            ),
+          }}
           columns={[
             { header: "Parish", cell: (p) => <Button href={`/dashboard/vicariate/parishes/${p.id}`} variant="ghost" className="h-auto px-0 py-0 font-medium">{p.name}</Button> },
             { header: "Deanery", cell: (p) => p.deaneryName ?? "-" },

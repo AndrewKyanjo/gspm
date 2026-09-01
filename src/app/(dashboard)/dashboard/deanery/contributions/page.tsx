@@ -72,7 +72,7 @@ export default async function DeaneryContributionsPage({
         columns={[
           { header: "Parish", cell: (row) => <span className="font-medium">{row.parishName}</span> },
           { header: "Month paid", cell: (row) => currencyFormatter.format(row.monthPaid) },
-          { header: "YTD paid", cell: (row) => currencyFormatter.format(row.ytdPaid) },
+          { header: "Emitemwa applied", cell: (row) => currencyFormatter.format(row.ytdPaid) },
           { header: "Balance", cell: (row) => currencyFormatter.format(row.annualBalance) },
           {
             header: "Good Samaritan",

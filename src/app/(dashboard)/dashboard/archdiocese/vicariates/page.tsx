@@ -3,11 +3,13 @@ import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/arch
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VicariateRateForm } from "@/components/dashboard/archdiocese/forms/vicariate-rate-form";
 import { VicariateCreateForm } from "@/components/dashboard/archdiocese/forms/vicariate-create-form";
 import { getArchdioceseVicariateOverviews } from "@/features/archdiocese/queries";
+import { deleteHierarchyEntity, updateHierarchyEntityName } from "@/features/hierarchy/actions";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
 const currencyFormatter = new Intl.NumberFormat("en-UG", {
@@ -74,6 +76,19 @@ export default async function ArchdioceseVicariatesPage() {
         title="Vicariate registry"
         description="Each row owns its deanery and parish footprint explicitly."
         rows={vicariates}
+        rowKey={(item) => item.id}
+        actions={context.role === "super_admin" || context.role === "archdiocese_admin" ? {
+          cell: (item) => (
+            <EditDeleteRowActions
+              recordId={item.id}
+              recordType="vicariate"
+              initialName={item.name}
+              editAction={updateHierarchyEntityName}
+              deleteAction={deleteHierarchyEntity}
+              deleteDescription={`Delete “${item.name}”? Vicariates with related records cannot be deleted.`}
+            />
+          ),
+        } : undefined}
         columns={[
           {
             header: "Vicariate",

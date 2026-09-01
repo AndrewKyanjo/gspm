@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Unknown report type: ${type}` }, { status: 400 });
     }
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

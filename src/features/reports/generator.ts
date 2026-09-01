@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getContributionRollupReport, getProjectContributionBreakdowns, MONTH_LABELS } from "@/features/contributions/queries";
-import { getHierarchyCollections, type HierarchyScope } from "@/lib/db/queries/hierarchy";
+import type { HierarchyScope } from "@/lib/db/queries/hierarchy";
 import type { MonthlyFinancialData, MonthlyProjectData, MonthlyDocumentData } from "./types";
 
 function numberValue(value: unknown): number {
@@ -44,6 +44,7 @@ export async function buildFinancialSection(
     goodSamaritanTotalCount: currentReport.rows.length,
     goodSamaritanDue: currentReport.totals.goodSamaritanDue,
     goodSamaritanPaid: currentReport.totals.goodSamaritanPaid,
+    surplus: currentReport.totals.surplus,
     arrearsCount: currentReport.rows.filter((r) => r.annualBalance > 0).length,
     arrearsTotal: currentReport.rows.reduce((sum, r) => sum + r.annualBalance, 0),
     byParish: currentReport.rows.map((r) => ({
@@ -54,6 +55,7 @@ export async function buildFinancialSection(
       ytdPaid: r.ytdPaid,
       annualBalance: r.annualBalance,
       goodSamaritanCleared: r.goodSamaritanCleared,
+      surplus: r.surplus,
     })),
     byContributionType: [...byContributionType.entries()]
       .map(([type, amount]) => ({ type, amount }))

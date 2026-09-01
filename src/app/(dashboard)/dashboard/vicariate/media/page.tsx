@@ -4,7 +4,9 @@ import { VicariateShell } from "@/components/dashboard/vicariate/shared/vicariat
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Button } from "@/components/ui/button";
+import { deletePublishedMedia, updatePublishedMediaName } from "@/features/media/actions";
 import { getVicariateMediaGroups } from "@/features/vicariate/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
@@ -42,7 +44,7 @@ export default async function VicariateMediaPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {group.items.map((item) => (
-                  <div key={item.path} className="overflow-hidden rounded-md border border-outline-variant bg-surface-container-lowest">
+                  <div key={item.id} className="overflow-hidden rounded-md border border-outline-variant bg-surface-container-lowest">
                     {item.previewUrl ? (
                       <img src={item.previewUrl} alt={item.name} className="aspect-[4/3] w-full object-cover" />
                     ) : (
@@ -51,8 +53,22 @@ export default async function VicariateMediaPage() {
                     <div className="space-y-1 p-3">
                       <p className="truncate text-sm font-medium text-on-surface">{item.name}</p>
                       <p className="text-xs text-on-surface-variant">
-                        {item.parishName ? `${item.parishName}${item.deaneryName ? ` • ${item.deaneryName}` : ""}` : item.category === "vicariate" ? "Vicariate upload" : ""}
+                        {item.parishName
+                          ? `${item.parishName}${item.deaneryName ? ` • ${item.deaneryName}` : ""}`
+                          : item.category === "vicariate"
+                            ? "Vicariate upload"
+                            : item.deaneryName ?? "Deanery upload"}
                       </p>
+                      <div className="border-t border-outline-variant pt-2">
+                        <EditDeleteRowActions
+                          recordId={item.id}
+                          initialName={item.name}
+                          nameLabel="Media name"
+                          editAction={updatePublishedMediaName}
+                          deleteAction={deletePublishedMedia}
+                          deleteDescription={`Delete “${item.name}” from the media library and storage?`}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}

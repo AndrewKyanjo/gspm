@@ -4,7 +4,9 @@ import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { StatCard } from "@/components/dashboard/parish/stats/stat-card";
 import { SimpleTable } from "@/components/dashboard/parish/tables/simple-table";
+import { EditDeleteRowActions } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { Button } from "@/components/ui/button";
+import { deleteDocument, updateDocumentName } from "@/features/documents/actions";
 import { getVicariateDocuments } from "@/features/vicariate/queries";
 import { requireAuth } from "@/lib/auth/requireAuth";
 
@@ -43,6 +45,20 @@ export default async function VicariateDocumentsPage({ searchParams }: Props) {
         <SimpleTable
           title="Document register"
           rows={documents}
+          rowKey={(document) => document.id}
+          actions={{
+            cell: (document) => (
+              <EditDeleteRowActions
+                recordId={document.id}
+                recordType="vicariate"
+                initialName={document.title}
+                nameLabel="Document title"
+                editAction={updateDocumentName}
+                deleteAction={deleteDocument}
+                deleteDescription={`Delete “${document.title}” and its stored file?`}
+              />
+            ),
+          }}
           columns={[
             { header: "Title", cell: (d) => d.title },
             { header: "Category", cell: (d) => d.category },

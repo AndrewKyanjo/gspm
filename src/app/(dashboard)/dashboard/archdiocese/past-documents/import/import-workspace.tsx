@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, FileSearch, RefreshCw, Trash2, Upload, X } from "lucide-react";
+import { Check, FileSearch, Pencil, RefreshCw, Trash2, Upload } from "lucide-react";
 import { DocumentPreviewButton } from "@/components/dashboard/shared/document-preview-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,6 +94,13 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
+  }
+
+  function openEditor(id: string) {
+    const editor = document.getElementById(`document-editor-${id}`) as HTMLDetailsElement | null;
+    if (!editor) return;
+    editor.open = true;
+    editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
@@ -254,6 +261,10 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => openEditor(item.id)}>
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
                   <DocumentPreviewButton
                     bucket="past-document-imports"
                     path={item.staging_storage_path}
@@ -269,15 +280,15 @@ export function PastDocumentImportWorkspace({ documents, vicariates, deaneries, 
                   <form action={rejectPastDocumentImport}>
                     <input type="hidden" name="importId" value={item.id} />
                     <Button type="submit" variant="ghost" size="sm" disabled={item.review_status === "published"}>
-                      <X className="h-4 w-4" />
-                      Reject
+                      <Trash2 className="h-4 w-4 text-error" />
+                      Delete
                     </Button>
                   </form>
                 </div>
               </div>
 
-              <details className="mt-4 rounded-md border border-outline-variant bg-surface p-4">
-                <summary className="cursor-pointer text-sm font-medium text-on-surface">Review metadata</summary>
+              <details id={`document-editor-${item.id}`} className="mt-4 rounded-md border border-outline-variant bg-surface p-4">
+                <summary className="cursor-pointer text-sm font-medium text-on-surface">Edit name and document metadata</summary>
                 <form action={updatePastDocumentImportReview} className="mt-4 grid gap-4">
                   <input type="hidden" name="importId" value={item.id} />
                   <div className="grid gap-4 md:grid-cols-2">
