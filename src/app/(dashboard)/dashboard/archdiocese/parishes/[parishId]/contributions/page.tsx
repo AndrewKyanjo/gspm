@@ -16,6 +16,7 @@ export default async function ParishContributionsPage({ params }: Props) {
   });
   if (!context.archdioceseId) return null;
 
+  const canEditParish = context.role === "super_admin" || context.role === "archdiocese_admin";
   const { parishId } = await params;
   const supabase = createAdminClient();
 
@@ -64,16 +65,16 @@ export default async function ParishContributionsPage({ params }: Props) {
         title={`${parish.name} — Contribution Rates`}
         description={`Code: ${parish.code ?? "N/A"} • Vicariate: ${vicariate?.name ?? "Unknown"}`}
         actions={
-          <Button
-            href={`/dashboard/archdiocese/parishes/${parishId}`}
-            variant="secondary"
-          >
-            Back to parish
-          </Button>
+          <span className="inline-flex flex-wrap gap-2">
+            {canEditParish ? <Button href={`/dashboard/archdiocese/parishes/${parishId}/edit`}>Edit parish</Button> : null}
+            <Button href={`/dashboard/archdiocese/parishes/${parishId}`} variant="secondary">
+              Back to parish
+            </Button>
+          </span>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className={`grid gap-6 ${canEditParish ? "lg:grid-cols-2" : ""}`}>
         <Card>
           <CardHeader>
             <CardTitle>Effective Rates</CardTitle>
@@ -115,35 +116,37 @@ export default async function ParishContributionsPage({ params }: Props) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {hasCustomRate ? "Update Custom Rates" : "Set Custom Rates"}
-            </CardTitle>
-            <CardDescription>
-              Override the vicariate defaults for this specific parish.
-              {hasCustomRate && " Clear both fields to revert to vicariate rates."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ParishRateForm
-              parishId={parish.id}
-              monthlyAmount={
-                parish.monthly_emitemwa_amount != null
-                  ? Number(parish.monthly_emitemwa_amount)
-                  : null
-              }
-              goodSamaritanAmount={
-                parish.good_samaritan_day_amount != null
-                  ? Number(parish.good_samaritan_day_amount)
-                  : null
-              }
-              vicariateMonthlyAmount={vicariateMonthly}
-              vicariateGsdAmount={vicariateGsd}
-              returnTo={`/dashboard/archdiocese/parishes/${parishId}/contributions`}
-            />
-          </CardContent>
-        </Card>
+        {canEditParish ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {hasCustomRate ? "Update Custom Rates" : "Set Custom Rates"}
+              </CardTitle>
+              <CardDescription>
+                Override the vicariate defaults for this specific parish.
+                {hasCustomRate && " Clear both fields to revert to vicariate rates."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ParishRateForm
+                parishId={parish.id}
+                monthlyAmount={
+                  parish.monthly_emitemwa_amount != null
+                    ? Number(parish.monthly_emitemwa_amount)
+                    : null
+                }
+                goodSamaritanAmount={
+                  parish.good_samaritan_day_amount != null
+                    ? Number(parish.good_samaritan_day_amount)
+                    : null
+                }
+                vicariateMonthlyAmount={vicariateMonthly}
+                vicariateGsdAmount={vicariateGsd}
+                returnTo={`/dashboard/archdiocese/parishes/${parishId}/contributions`}
+              />
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
 
       <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
