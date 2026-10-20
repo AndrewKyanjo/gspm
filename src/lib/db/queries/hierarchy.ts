@@ -37,6 +37,7 @@ function applyHierarchyScope(
   query: SupabaseQueryBuilder,
   scope: HierarchyScope,
   supportedColumns: HierarchyColumn[],
+  idScopeKey: HierarchyColumn,
 ) {
   let currentQuery = query;
   for (const scopeKey of supportedColumns) {
@@ -44,7 +45,7 @@ function applyHierarchyScope(
     if (!value) {
       continue;
     }
-    currentQuery = currentQuery.eq(COLUMN_BY_SCOPE_KEY[scopeKey], value);
+    currentQuery = currentQuery.eq(scopeKey === idScopeKey ? "id" : COLUMN_BY_SCOPE_KEY[scopeKey], value);
   }
   return currentQuery;
 }
@@ -62,7 +63,8 @@ export async function getHierarchyCollections(scope: HierarchyScope = {}): Promi
       .select("id, name, archdiocese_id, code, status, monthly_emitemwa_amount, good_samaritan_day_amount")
       .order("name", { ascending: true }),
     scope,
-    ["archdioceseId", "vicariateId"]
+    ["archdioceseId", "vicariateId"],
+    "vicariateId",
   );
 
   const deaneryQuery = applyHierarchyScope(
@@ -71,7 +73,8 @@ export async function getHierarchyCollections(scope: HierarchyScope = {}): Promi
       .select("id, name, archdiocese_id, vicariate_id, code, status")
       .order("name", { ascending: true }),
     scope,
-    ["archdioceseId", "vicariateId", "deaneryId"]
+    ["archdioceseId", "vicariateId", "deaneryId"],
+    "deaneryId",
   );
 
   const parishQuery = applyHierarchyScope(
@@ -80,7 +83,8 @@ export async function getHierarchyCollections(scope: HierarchyScope = {}): Promi
       .select("id, name, archdiocese_id, vicariate_id, deanery_id, code, status, monthly_emitemwa_amount, good_samaritan_day_amount")
       .order("name", { ascending: true }),
     scope,
-    ["archdioceseId", "vicariateId", "deaneryId", "parishId"]
+    ["archdioceseId", "vicariateId", "deaneryId", "parishId"],
+    "parishId",
   );
 
   const [archdiocesesResult, vicariatesResult, deaneriesResult, parishesResult] = await Promise.all([
