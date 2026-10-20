@@ -47,7 +47,7 @@ export default async function HierarchySettingsPage() {
     >
       <PageHeader
         title="Hierarchy Management"
-        description="View and manage all hierarchy entities. Status changes and name edits are performed by the Archdiocese admin via the database or API."
+        description="Edit parish names, deaneries and contribution rates directly from the parish register."
       />
 
       <section className="grid gap-4 md:grid-cols-4">
@@ -81,11 +81,13 @@ export default async function HierarchySettingsPage() {
 
         <SimpleTable
           title="Parishes"
+          description="Open the parish register to find and edit any parish."
           rows={parishes.slice(0, 10)}
           columns={[
             { header: "Name", cell: (item) => <div className="space-y-1"><div className="font-medium">{item.name}</div></div> },
             { header: "Deanery", cell: (item) => item.deaneryName ?? "N/A" },
             { header: "Vicariate", cell: (item) => item.vicariateName ?? "N/A" },
+            { header: "Edit", cell: (item) => <Button href={`/dashboard/archdiocese/parishes/${item.id}/edit`} size="sm">Edit</Button> },
           ]}
         />
       </section>
@@ -93,10 +95,11 @@ export default async function HierarchySettingsPage() {
       <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
         <p className="text-sm font-semibold text-on-surface mb-2">Management actions</p>
         <p className="text-sm text-on-surface-variant">
-          Hierarchy mutations (create, update, delete, status changes) are performed via the Supabase database admin panel or API.
-          For programmatic management, use the server actions in <code className="text-xs bg-surface-container px-1 py-0.5 rounded">src/features/archdiocese/actions.ts</code>.
-          The executive console provides full read visibility across the hierarchy with vicariate-aware context.
+          Use the parish register to change a parish name, select its deanery and set its monthly contribution.
+          The vicariate follows the selected deanery. Archdiocese administrators manage parishes within their archdiocese;
+          super administrators can also move parishes to another active archdiocese.
         </p>
+        <Button href="/dashboard/archdiocese/parishes" className="mt-4">Manage parishes</Button>
       </div>
     </ArchdioceseShell>
   );
