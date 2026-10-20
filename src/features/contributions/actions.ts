@@ -10,6 +10,8 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canProxyEnterForScope } from "@/lib/permissions/access";
+import { saveParishDetails } from "@/features/archdiocese/parish-management";
+import { resolveContributionRates } from "./rates";
 import type { BulkCreateContributionsInput, BulkCreateContributionsResult } from "./types";
 import type { RowActionResult } from "@/components/dashboard/shared/edit-delete-row-actions";
 import { allocateMandatoryContributions } from "./calculations";
@@ -159,14 +161,7 @@ export async function recordMandatoryContribution(
       .eq("id", parish.vicariate_id)
       .maybeSingle();
 
-    // Priority: Parish override > Vicariate rate > Default (50000)
-    const parishMonthlyOverride = parishData?.monthly_emitemwa_amount != null
-      ? Number(parishData.monthly_emitemwa_amount)
-      : null;
-    const monthlyRate = parishMonthlyOverride ?? Number(vicariate?.monthly_emitemwa_amount ?? 50000);
-    const goodSamaritanRate = Number(
-      parishData?.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
-    );
+    const { monthlyRate, goodSamaritanRate } = resolveContributionRates(parishData, vicariate);
 
     // Get YTD Emitemwa paid (including legacy)
     const { data: ytdPayments } = await supabase
@@ -517,40 +512,10 @@ export async function updateParishContributionRates(
   _previousState: ContributionActionState,
   formData: FormData,
 ): Promise<ContributionActionState> {
-  await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
-  const parishId = readString(formData, "parishId");
-  const monthlyStr = readString(formData, "monthlyEmitemwaAmount");
-  const gsdStr = readString(formData, "goodSamaritanDayAmount");
-
-  if (!parishId) {
-    return { error: "Parish ID is required." };
-  }
-
-  // Empty values = clear override (revert to vicariate rate)
-  const monthly = monthlyStr !== "" ? readAmount(formData, "monthlyEmitemwaAmount") : null;
-  const goodSamaritan = gsdStr !== "" ? readAmount(formData, "goodSamaritanDayAmount") : null;
-
-  // Validate non-negative if provided
-  if (monthly !== null && (!Number.isFinite(monthly) || monthly < 0)) {
-    return { error: "Monthly Emitemwa rate must be a valid non-negative number." };
-  }
-  if (goodSamaritan !== null && (!Number.isFinite(goodSamaritan) || goodSamaritan < 0)) {
-    return { error: "Good Samaritan Day rate must be a valid non-negative number." };
-  }
-
-  const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("parishes")
-    .update({
-      monthly_emitemwa_amount: monthly,
-      good_samaritan_day_amount: goodSamaritan,
-    })
-    .eq("id", parishId);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/dashboard/archdiocese/parishes");
-  revalidateContributionViews();
+  const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin"] });
+  const result = await saveParishDetails(context, formData, true);
+  if (result.error) return { error: result.error };
+  revalidatePath("/dashboard", "layout");
   return { error: null, message: "Parish rates updated." };
 }
 
