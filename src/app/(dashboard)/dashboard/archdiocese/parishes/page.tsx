@@ -37,6 +37,7 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
     return null;
   }
 
+  const canEditParishes = context.role === "super_admin" || context.role === "archdiocese_admin";
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q.trim() : "";
 
@@ -63,8 +64,8 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
     >
       <PageHeader
         title="Parishes"
-        description="The list stays hierarchy-aware by carrying both deanery and vicariate metadata for every parish record."
-        actions={<Button href="/dashboard/archdiocese/settings/hierarchy">Hierarchy settings</Button>}
+        description="View parish details, hierarchy and monthly contribution rates."
+        actions={canEditParishes ? <Button href="/dashboard/archdiocese/settings/hierarchy">Hierarchy settings</Button> : undefined}
       />
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -120,6 +121,10 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
               cell: (item) => item.vicariateName ?? "Unassigned",
             },
             {
+              header: "Monthly Emitemwa",
+              cell: (item) => `${item.monthlyEmitemwaAmount.toLocaleString("en-UG")} UGX`,
+            },
+            {
               header: "Latest report",
               cell: (item) => (
                 <Badge variant={statusVariant(item.latestReportStatus)}>{item.latestReportStatus ?? "none"}</Badge>
@@ -134,11 +139,18 @@ export default async function ArchdioceseParishesPage({ searchParams }: Archdioc
               cell: (item) => item.totalContributions,
             },
             {
-              header: "Open",
+              header: "Actions",
               cell: (item) => (
-                <Button href={`/dashboard/archdiocese/parishes/${item.id}`} size="sm" variant="secondary">
-                  View
-                </Button>
+                <span className="inline-flex flex-wrap gap-2">
+                  <Button href={`/dashboard/archdiocese/parishes/${item.id}`} size="sm" variant="secondary">
+                    View
+                  </Button>
+                  {canEditParishes ? (
+                    <Button href={`/dashboard/archdiocese/parishes/${item.id}/edit`} size="sm">
+                      Edit
+                    </Button>
+                  ) : null}
+                </span>
               ),
             },
           ]}
