@@ -312,6 +312,9 @@ export async function getArchdioceseParishOverviews(
     deaneryId: parish.deanery_id,
     vicariateName: maps.vicariatesById.get(parish.vicariate_id)?.name ?? null,
     deaneryName: maps.deaneriesById.get(parish.deanery_id)?.name ?? null,
+    monthlyEmitemwaAmount: parseNumeric(
+      parish.monthly_emitemwa_amount ?? maps.vicariatesById.get(parish.vicariate_id)?.monthly_emitemwa_amount ?? 50000
+    ),
     latestReportStatus: latestReportStatusByParish.get(parish.id) ?? null,
     totalProjects: projectsByParish.get(parish.id) ?? 0,
     totalContributions: contributionsByParish.get(parish.id) ?? 0,
@@ -661,7 +664,7 @@ export async function getParishDetail(
   parishId: string
 ): Promise<ParishDetail | null> {
   const supabase = createAdminClient();
-  const [{ collections, maps }, reportsResult, projectsResult, contributionsResult] =
+  const [{ maps }, reportsResult, projectsResult, contributionsResult] =
     await Promise.all([
       getArchdioceseHierarchy(archdioceseId),
       supabase
@@ -702,6 +705,7 @@ export async function getParishDetail(
     archdioceseName: vicariate
       ? maps.archdiocesesById.get(vicariate.archdiocese_id)?.name ?? null
       : null,
+    monthlyEmitemwaAmount: parseNumeric(parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000),
     recentReports: (reportsResult.data ?? []).map((r) => ({
       id: r.id,
       parishId: r.parish_id,
