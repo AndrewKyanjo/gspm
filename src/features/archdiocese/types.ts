@@ -58,6 +58,7 @@ export type ArchdioceseParishOverview = {
   deaneryId: string;
   vicariateName: string | null;
   deaneryName: string | null;
+  monthlyEmitemwaAmount: number;
   latestReportStatus: string | null;
   totalProjects: number;
   totalContributions: number;
@@ -217,6 +218,7 @@ export type ParishDetail = {
   deaneryId: string;
   deaneryName: string | null;
   archdioceseName: string | null;
+  monthlyEmitemwaAmount: number;
   recentReports: ArchdioceseReportSummaryItem[];
   recentProjects: Array<{
     id: string;

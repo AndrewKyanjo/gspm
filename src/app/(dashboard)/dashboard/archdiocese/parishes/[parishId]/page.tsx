@@ -1,4 +1,4 @@
-import { Building2, FolderKanban, HandCoins, Landmark, ShieldCheck } from "lucide-react";
+import { Building2, FolderKanban, HandCoins, Landmark } from "lucide-react";
 import { ArchdioceseShell } from "@/components/dashboard/archdiocese/shared/archdiocese-shell";
 import { PageHeader } from "@/components/dashboard/parish/shared/page-header";
 import { EmptyState } from "@/components/dashboard/parish/shared/empty-state";
@@ -36,6 +36,7 @@ export default async function ParishDetailPage({ params }: Props) {
   const context = await requireAuth({ roles: ["super_admin", "archdiocese_admin", "archdiocese_data_entry"] });
   if (!context.archdioceseId) return null;
 
+  const canEditParish = context.role === "super_admin" || context.role === "archdiocese_admin";
   const { parishId } = await params;
   const detail = await getParishDetail(context.archdioceseId, parishId);
   if (!detail) notFound();
@@ -54,7 +55,8 @@ export default async function ParishDetailPage({ params }: Props) {
         title={detail.name}
         description={`Code: ${detail.code ?? "N/A"} • Archdiocese: ${detail.archdioceseName ?? "N/A"}`}
         actions={
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex flex-wrap items-center gap-2">
+            {canEditParish ? <Button href={`/dashboard/archdiocese/parishes/${parishId}/edit`}>Edit parish</Button> : null}
             <Button href={`/dashboard/archdiocese/parishes/${parishId}/contributions`} variant="secondary">
               Contribution Rates
             </Button>
@@ -102,6 +104,15 @@ export default async function ParishDetailPage({ params }: Props) {
               { header: "Date", cell: (item) => new Date(item.contributedOn).toLocaleDateString() },
             ]} />
           ) : <EmptyState title="No contributions" description="No contributions have been recorded for this parish yet." />}
+
+          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Contribution rates</p>
+            <div className="mt-4 space-y-2 text-sm">
+              <div className="flex justify-between gap-3"><span className="text-on-surface-variant">Monthly Emitemwa</span><span className="font-medium text-on-surface">{currencyFormatter.format(detail.monthlyEmitemwaAmount)}</span></div>
+              <div className="flex justify-between gap-3"><span className="text-on-surface-variant">Annual Emitemwa</span><span className="font-medium text-on-surface">{currencyFormatter.format(detail.monthlyEmitemwaAmount * 12)}</span></div>
+              <p className="text-xs text-on-surface-variant">Annual Emitemwa covers 12 monthly payments. Good Samaritan Day is separate.</p>
+            </div>
+          </div>
 
           <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Hierarchy context</p>

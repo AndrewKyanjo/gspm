@@ -220,7 +220,7 @@ async function main() {
 
   for (const [sourceName, paidAmount, balanceAmount] of legacyRows) {
     const sourceKey = key(sourceName);
-    const parish = parishByKey.get(aliases.get(sourceKey) ?? sourceKey);
+    const parish = parishByKey.get(sourceKey) ?? parishByKey.get(aliases.get(sourceKey));
 
     if (!parish) {
       unmatched.push(sourceName);

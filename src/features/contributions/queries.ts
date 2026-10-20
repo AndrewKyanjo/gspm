@@ -1,6 +1,7 @@
 import { buildHierarchyMaps, getHierarchyCollections, type HierarchyScope } from "@/lib/db/queries/hierarchy";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { allocateMandatoryContributions } from "./calculations";
+import { resolveContributionRates } from "./rates";
 import type {
   ContributionReportRow,
   ContributionRollupReport,
@@ -173,12 +174,7 @@ export async function getParishContributionDashboard(
   if (!context) return null;
 
   const { parish, vicariate, deanery } = context;
-  const monthlyRate = numberValue(
-    parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
-  );
-  const goodSamaritanRate = numberValue(
-    parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
-  );
+  const { monthlyRate, goodSamaritanRate } = resolveContributionRates(parish, vicariate);
 
   const supabase = createAdminClient();
   const [paymentsResult, legacyResult, projects] = await Promise.all([
@@ -339,12 +335,8 @@ export async function getContributionRollupReport({
   const rows: ContributionReportRow[] = parishes.map((parish) => {
     const vicariate = maps.vicariatesById.get(parish.vicariate_id);
     const deanery = maps.deaneriesById.get(parish.deanery_id);
-    const monthlyDue = numberValue(
-      parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
-    );
-    const goodSamaritanDue = numberValue(
-      parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
-    );
+    const { monthlyRate: monthlyDue, goodSamaritanRate: goodSamaritanDue } =
+      resolveContributionRates(parish, vicariate);
     const parishPayments = paymentRows.filter((payment) => payment.parish_id === parish.id);
     const monthlyPayments = parishPayments.filter((payment) => payment.payment_kind === "monthly");
     const monthPayments = monthlyPayments.filter((payment) => Number(payment.contribution_month) === month);
@@ -579,12 +571,8 @@ export async function getExcessParishes(
   for (const parish of parishes) {
     const vicariate = maps.vicariatesById.get(parish.vicariate_id);
     const deanery = maps.deaneriesById.get(parish.deanery_id);
-    const monthlyDue = numberValue(
-      parish.monthly_emitemwa_amount ?? vicariate?.monthly_emitemwa_amount ?? 50000,
-    );
-    const goodSamaritanDue = numberValue(
-      parish.good_samaritan_day_amount ?? vicariate?.good_samaritan_day_amount ?? 250000,
-    );
+    const { monthlyRate: monthlyDue, goodSamaritanRate: goodSamaritanDue } =
+      resolveContributionRates(parish, vicariate);
     const legacy = legacyByParish.get(parish.id);
     const parishPayments = paymentRows.filter((p) => p.parish_id === parish.id);
     const monthlyPayments = parishPayments
